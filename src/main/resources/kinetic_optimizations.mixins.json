@@ -9,7 +9,8 @@
     "GlStateDeduplicationMixin",
     "ChunkRebuildMixin",
     "EntityRenderDispatcherMixin",
-    "ParticleManagerMixin"
+    "ParticleManagerMixin",
+    "MathHelperFastTrigMixin"
   ],
   "injectors": {
     "defaultRequire": 1

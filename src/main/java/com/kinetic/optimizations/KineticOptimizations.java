@@ -6,6 +6,7 @@ import com.kinetic.optimizations.config.KineticConfig;
 import com.kinetic.optimizations.core.KineticMixinPlugin;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.entities.KineticEntityParticleEngine;
+import com.kinetic.optimizations.memory.KineticCpuMemoryEngine;
 import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 import com.kinetic.optimizations.utilities.KineticLogger;
 import net.fabricmc.api.ClientModInitializer;
@@ -15,7 +16,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "0.5.0-alpha";
+    public static final String MOD_VERSION = "0.6.0-alpha";
 
     private static KineticOptimizations instance;
 
@@ -51,9 +52,10 @@ public final class KineticOptimizations implements ClientModInitializer {
         KineticRenderOptimizer.getInstance().onFrameStart();
         KineticChunkEngine.getInstance().onFrameStart();
         KineticEntityParticleEngine.getInstance().onFrameStart();
+        KineticCpuMemoryEngine.getInstance().onClientTick();
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
         KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
-        KineticLogger.info("Phase 5 Entity & Particle Engine (Zero-Sqrt Entity Culler, BlockEntity Culler, Particle Budgeter) active.");
+        KineticLogger.info("Phase 6 CPU & Memory Engine (16KB L1-Resident FastMath LUT, Thread-Local Coordinate Cursors, Packet Burst Optimizer) active.");
     }
 
     public static KineticOptimizations getInstance() {

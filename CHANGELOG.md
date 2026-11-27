@@ -2,19 +2,21 @@
 
 All notable changes to Kinetic Optimizations are documented in this file.
 
+## [0.6.0-alpha] - Phase 6: CPU and Memory Engine
+### Added
+- Implemented `FastMathEngine` and `MathHelperFastTrigMixin` providing a 16 KB L1-cache-resident trigonometric lookup table (`sin`/`cos`), branchless `fastFloor`, and `fastInvSqrt`.
+- Implemented `AllocationReducer` with pre-computed 6-direction normal offset tables and a 32-slot thread-local `MutablePosCursor` ring to eliminate temporary `BlockPos` and `Direction.values()` array allocations.
+- Implemented `MemoryPoolManager` to automatically trim thread-local pools under high heap occupancy (>85%) without calling `System.gc()`.
+- Implemented `PacketBurstOptimizer` and `KineticCpuMemoryEngine`.
+- Upgraded `EntityRenderDispatcherMixin` to hook `setCameraPos` and `shouldRender`.
+
 ## [0.5.0-alpha] - Phase 5: Entity and Particle Engine
 ### Added
-- Implemented `EntityVisibilityOptimizer` for zero-sqrt squared-distance entity culling, 6-plane AABB frustum culling, and invisible marker armor stand filtering while preserving gameplay-critical entities.
-- Implemented `BlockEntityCullingOptimizer` to skip off-screen and out-of-range TileEntity special renderers (chests, signs, skulls, banners) while preserving global beacons.
-- Implemented `ParticleEngineOptimizer` enforcing configurable active particle caps (`maxActiveParticles`), squared render distance thresholds (`particleRenderDistance`), and frustum culling.
-- Added `KineticEntityParticleEngine`, `EntityRenderDispatcherMixin`, and `ParticleManagerMixin`.
-- Upgraded `ChunkRebuildMixin` to hook `net.minecraft.client.render.world.RenderChunk` directly.
+- Implemented `EntityVisibilityOptimizer`, `BlockEntityCullingOptimizer`, `ParticleEngineOptimizer`, `KineticEntityParticleEngine`, `EntityRenderDispatcherMixin`, and `ParticleManagerMixin`.
 
 ## [0.4.0-alpha] - Phase 4: Chunk Engine
 ### Added
-- Implemented `ChunkRebuildDeduplicator` using a zero-allocation 64-bit packed section key (`long[2048]` open-addressed hash table).
-- Implemented `ChunkUploadBudgeter` with adaptive frame-time awareness.
-- Implemented `ChunkVisibilityOptimizer`, `KineticChunkEngine`, and `ChunkRebuildMixin`.
+- Implemented `ChunkRebuildDeduplicator`, `ChunkUploadBudgeter`, `ChunkVisibilityOptimizer`, `KineticChunkEngine`, and `ChunkRebuildMixin`.
 
 ## [0.3.0-alpha] - Phase 3: High-Impact Rendering Optimizations
 ### Added

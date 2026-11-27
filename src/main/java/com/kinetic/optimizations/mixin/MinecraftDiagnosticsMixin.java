@@ -3,6 +3,7 @@ package com.kinetic.optimizations.mixin;
 import com.kinetic.optimizations.chunks.KineticChunkEngine;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.entities.KineticEntityParticleEngine;
+import com.kinetic.optimizations.memory.KineticCpuMemoryEngine;
 import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,5 +29,6 @@ public abstract class MinecraftDiagnosticsMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void kinetic$onClientTickStart(CallbackInfo ci) {
         KineticChunkEngine.getInstance().onClientTick();
+        KineticCpuMemoryEngine.getInstance().onClientTick();
     }
 }
