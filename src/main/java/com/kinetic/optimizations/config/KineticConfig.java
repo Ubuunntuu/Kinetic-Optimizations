@@ -58,6 +58,8 @@ public final class KineticConfig {
     // 8. GPU
     public static boolean deduplicateTextureBinds = true;
     public static boolean minimizeRedundantBufferUploads = true;
+    public static boolean limitUnfocusedFps = true;
+    public static int unfocusedFpsTarget = 15;
 
     // 9. Networking
     public static boolean optimizePacketProcessing = true;
@@ -88,7 +90,6 @@ public final class KineticConfig {
                 return cachedConfigPath;
             }
         } catch (Throwable ignored) {
-            // Standalone JUnit / benchmark environment without active Fabric GameProvider
         }
         cachedConfigPath = Path.of("build", "test-config", "kinetic_optimizations.json");
         return cachedConfigPath;
@@ -177,6 +178,8 @@ public final class KineticConfig {
 
         deduplicateTextureBinds = data.deduplicateTextureBinds;
         minimizeRedundantBufferUploads = data.minimizeRedundantBufferUploads;
+        limitUnfocusedFps = data.limitUnfocusedFps;
+        unfocusedFpsTarget = clamp(data.unfocusedFpsTarget, 5, 60);
 
         optimizePacketProcessing = data.optimizePacketProcessing;
         reducePacketAllocations = data.reducePacketAllocations;
@@ -234,6 +237,8 @@ public final class KineticConfig {
 
         data.deduplicateTextureBinds = deduplicateTextureBinds;
         data.minimizeRedundantBufferUploads = minimizeRedundantBufferUploads;
+        data.limitUnfocusedFps = limitUnfocusedFps;
+        data.unfocusedFpsTarget = unfocusedFpsTarget;
 
         data.optimizePacketProcessing = optimizePacketProcessing;
         data.reducePacketAllocations = reducePacketAllocations;
@@ -272,6 +277,8 @@ public final class KineticConfig {
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
                 minimizeRedundantBufferUploads = true;
+                limitUnfocusedFps = true;
+                unfocusedFpsTarget = 30;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = false;
                 enableExperimentalOptimizations = false;
@@ -299,6 +306,8 @@ public final class KineticConfig {
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
                 minimizeRedundantBufferUploads = true;
+                limitUnfocusedFps = true;
+                unfocusedFpsTarget = 15;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = true;
                 enableExperimentalOptimizations = false;
@@ -326,6 +335,8 @@ public final class KineticConfig {
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
                 minimizeRedundantBufferUploads = true;
+                limitUnfocusedFps = true;
+                unfocusedFpsTarget = 15;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = true;
                 enableExperimentalOptimizations = false;
@@ -353,6 +364,8 @@ public final class KineticConfig {
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
                 minimizeRedundantBufferUploads = true;
+                limitUnfocusedFps = true;
+                unfocusedFpsTarget = 10;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = true;
                 enableExperimentalOptimizations = false;
@@ -405,6 +418,8 @@ public final class KineticConfig {
 
         public boolean deduplicateTextureBinds = true;
         public boolean minimizeRedundantBufferUploads = true;
+        public boolean limitUnfocusedFps = true;
+        public int unfocusedFpsTarget = 15;
 
         public boolean optimizePacketProcessing = true;
         public boolean reducePacketAllocations = true;

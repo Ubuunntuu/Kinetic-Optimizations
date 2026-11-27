@@ -5,6 +5,7 @@ import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.entities.KineticEntityParticleEngine;
 import com.kinetic.optimizations.gui.KineticKeybindController;
 import com.kinetic.optimizations.memory.KineticCpuMemoryEngine;
+import com.kinetic.optimizations.performance.UnfocusedFpsLimiter;
 import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 import com.kinetic.optimizations.resources.ResourceCacheOptimizer;
 import net.minecraft.client.Minecraft;
@@ -26,6 +27,7 @@ public abstract class MinecraftDiagnosticsMixin {
     @Inject(method = "updateDisplay", at = @At("RETURN"))
     private void kinetic$onFrameDisplayEnd(CallbackInfo ci) {
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
+        UnfocusedFpsLimiter.getInstance().throttleIfWindowUnfocused();
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

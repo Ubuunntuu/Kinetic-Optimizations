@@ -9,6 +9,7 @@
     "GlStateDeduplicationMixin",
     "ChunkRebuildMixin",
     "EntityRenderDispatcherMixin",
+    "BlockEntityRenderDispatcherMixin",
     "ParticleManagerMixin",
     "MathHelperFastTrigMixin",
     "BufferUploaderMixin",
