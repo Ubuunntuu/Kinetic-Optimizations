@@ -2,6 +2,7 @@ package com.kinetic.optimizations.mixin;
 
 import com.kinetic.optimizations.chunks.KineticChunkEngine;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
+import com.kinetic.optimizations.entities.KineticEntityParticleEngine;
 import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +17,7 @@ public abstract class MinecraftDiagnosticsMixin {
     private void kinetic$onFrameDisplayStart(CallbackInfo ci) {
         KineticRenderOptimizer.getInstance().onFrameStart();
         KineticChunkEngine.getInstance().onFrameStart();
+        KineticEntityParticleEngine.getInstance().onFrameStart();
     }
 
     @Inject(method = "updateDisplay", at = @At("RETURN"))
