@@ -10,9 +10,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 
 import java.util.Locale;
 
-/**
- * Interactive multi-category configuration screen opened via F7.
- */
 public final class KineticConfigScreen extends Screen {
 
     private static final int TAB_GENERAL = 0;
@@ -37,18 +34,17 @@ public final class KineticConfigScreen extends Screen {
         int tabWidth = 76;
         int tabStartX = centerX - ((tabWidth * 5 + 16) / 2);
 
-        // Top Category Tabs (IDs 1..5)
-        this.buttons.add(makeTabButton(1, tabStartX, 28, tabWidth, "General", activeTab == TAB_GENERAL));
-        this.buttons.add(makeTabButton(2, tabStartX + (tabWidth + 4), 28, tabWidth, "Render/GPU", activeTab == TAB_RENDER));
-        this.buttons.add(makeTabButton(3, tabStartX + (tabWidth + 4) * 2, 28, tabWidth, "Chunks", activeTab == TAB_CHUNKS));
-        this.buttons.add(makeTabButton(4, tabStartX + (tabWidth + 4) * 3, 28, tabWidth, "Ent/Part", activeTab == TAB_ENTITIES));
-        this.buttons.add(makeTabButton(5, tabStartX + (tabWidth + 4) * 4, 28, tabWidth, "CPU & HUD", activeTab == TAB_SYSTEM));
+        this.buttons.add(makeTabButton(1, tabStartX, 26, tabWidth, "General", activeTab == TAB_GENERAL));
+        this.buttons.add(makeTabButton(2, tabStartX + (tabWidth + 4), 26, tabWidth, "Render/GPU", activeTab == TAB_RENDER));
+        this.buttons.add(makeTabButton(3, tabStartX + (tabWidth + 4) * 2, 26, tabWidth, "Chunks/Light", activeTab == TAB_CHUNKS));
+        this.buttons.add(makeTabButton(4, tabStartX + (tabWidth + 4) * 3, 26, tabWidth, "Ent/Drops", activeTab == TAB_ENTITIES));
+        this.buttons.add(makeTabButton(5, tabStartX + (tabWidth + 4) * 4, 26, tabWidth, "CPU & HUD", activeTab == TAB_SYSTEM));
 
         int colLeft = centerX - 155;
         int colRight = centerX + 5;
         int btnW = 150;
-        int y0 = 58;
-        int stepY = 24;
+        int y0 = 54;
+        int stepY = 23;
 
         switch (activeTab) {
             case TAB_GENERAL -> {
@@ -64,7 +60,7 @@ public final class KineticConfigScreen extends Screen {
                     toggleText("Unfocused Limiter", KineticConfig.limitUnfocusedFps)));
                 this.buttons.add(new ButtonWidget(105, colRight, y0 + stepY * 2, btnW, 20,
                     "Unfocused Cap: " + KineticConfig.unfocusedFpsTarget + " FPS"));
-                this.buttons.add(new ButtonWidget(106, centerX - 100, y0 + stepY * 3 + 6, 200, 20,
+                this.buttons.add(new ButtonWidget(106, centerX - 100, y0 + stepY * 3 + 4, 200, 20,
                     "Reset All Settings to Defaults"));
             }
             case TAB_RENDER -> {
@@ -80,16 +76,22 @@ public final class KineticConfigScreen extends Screen {
                     toggleText("Smart Anim Sprites", KineticConfig.smartAnimatedTextures)));
                 this.buttons.add(new ButtonWidget(205, colRight, y0 + stepY * 2, btnW, 20,
                     toggleText("Cull TileEntities", KineticConfig.cullHiddenTileEntities)));
+                this.buttons.add(new ButtonWidget(206, colLeft, y0 + stepY * 3, btnW, 20,
+                    toggleText("Text Width Cache", KineticConfig.cacheTextRendererWidths)));
+                this.buttons.add(new ButtonWidget(207, colRight, y0 + stepY * 3, btnW, 20,
+                    toggleText("Weather Guard", KineticConfig.optimizeWeatherRendering)));
             }
             case TAB_CHUNKS -> {
                 this.buttons.add(new ButtonWidget(300, colLeft, y0, btnW, 20,
                     toggleText("Chunk Dedup (64b)", KineticConfig.deduplicateChunkUpdates)));
                 this.buttons.add(new ButtonWidget(301, colRight, y0, btnW, 20,
                     toggleText("Adaptive Upload Cap", KineticConfig.optimizeChunkRebuildQueue)));
-                this.buttons.add(new ButtonWidget(302, centerX - 100, y0 + stepY, 200, 20,
+                this.buttons.add(new ButtonWidget(303, colLeft, y0 + stepY, btnW, 20,
+                    toggleText("Light Dedup (64b)", KineticConfig.deduplicateLightUpdates)));
+                this.buttons.add(new ButtonWidget(304, colRight, y0 + stepY, btnW, 20,
+                    toggleText("Fluid Dir Cache", KineticConfig.cacheEnumFacingValues)));
+                this.buttons.add(new ButtonWidget(302, centerX - 100, y0 + stepY * 2, 200, 20,
                     "Max Chunk Uploads/Frame: " + KineticConfig.maxChunkUploadsPerFrame));
-                this.buttons.add(new ButtonWidget(303, colLeft, y0 + stepY * 2, btnW, 20, toggleText("Light Dedup (64b)", KineticConfig.deduplicateLightUpdates)));
-                this.buttons.add(new ButtonWidget(304, colRight, y0 + stepY * 2, btnW, 20, toggleText("Text Width Cache", KineticConfig.cacheTextRendererWidths)));
             }
             case TAB_ENTITIES -> {
                 this.buttons.add(new ButtonWidget(400, colLeft, y0, btnW, 20,
@@ -103,15 +105,18 @@ public final class KineticConfigScreen extends Screen {
                     toggleText("Cull Offscreen Part.", KineticConfig.cullOffscreenParticles)));
                 this.buttons.add(new ButtonWidget(404, colLeft, y0 + stepY * 2, btnW, 20,
                     "Max Particles: " + KineticConfig.maxActiveParticles));
-                this.buttons.add(new ButtonWidget(405, colRight, y0 + stepY * 2, btnW, 20,
-                    "Particle Range: " + KineticConfig.particleRenderDistance + "m"));
-                this.buttons.add(new ButtonWidget(406, centerX - 100, y0 + stepY * 3, 200, 20, toggleText("Crammed Entity Cap (16/cell)", KineticConfig.throttleCrammedEntityCollisions)));
+                this.buttons.add(new ButtonWidget(406, colRight, y0 + stepY * 2, btnW, 20,
+                    toggleText("Crammed Push Cap", KineticConfig.throttleCrammedEntityCollisions)));
+                this.buttons.add(new ButtonWidget(407, colLeft, y0 + stepY * 3, btnW, 20,
+                    toggleText("Clumped Item Cap", KineticConfig.throttleClumpedItemsAndXp)));
+                this.buttons.add(new ButtonWidget(408, colRight, y0 + stepY * 3, btnW, 20,
+                    toggleText("Nametag Dist Cull", KineticConfig.cullDistantNametags)));
             }
             case TAB_SYSTEM -> {
                 this.buttons.add(new ButtonWidget(500, colLeft, y0, btnW, 20,
                     toggleText("16KB FastMath LUT", KineticConfig.fastMathLookup)));
                 this.buttons.add(new ButtonWidget(501, colRight, y0, btnW, 20,
-                    toggleText("Reuse GL Buffers", KineticConfig.reuseRenderBuffers)));
+                    toggleText("Java 25 FFM Arena", KineticConfig.reuseRenderBuffers)));
                 this.buttons.add(new ButtonWidget(502, colLeft, y0 + stepY, btnW, 20,
                     toggleText("HUD Overlay (F8)", KineticConfig.showPerformanceOverlay)));
                 this.buttons.add(new ButtonWidget(503, colRight, y0 + stepY, btnW, 20,
@@ -123,8 +128,7 @@ public final class KineticConfigScreen extends Screen {
             }
         }
 
-        // Bottom Save & Close button
-        this.buttons.add(new ButtonWidget(999, centerX - 100, this.height - 28, 200, 20, "Save & Done"));
+        this.buttons.add(new ButtonWidget(999, centerX - 100, this.height - 26, 200, 20, "Save & Done"));
     }
 
     private ButtonWidget makeTabButton(int id, int x, int y, int w, String label, boolean selected) {
@@ -163,10 +167,7 @@ public final class KineticConfigScreen extends Screen {
             }
             case 102 -> KineticConfig.compatibilityMode = !KineticConfig.compatibilityMode;
             case 103 -> KineticConfig.safeMode = !KineticConfig.safeMode;
-            case 104 -> {
-                KineticConfig.limitUnfocusedFps = !KineticConfig.limitUnfocusedFps;
-                KineticConfig.markCustom();
-            }
+            case 104 -> { KineticConfig.limitUnfocusedFps = !KineticConfig.limitUnfocusedFps; KineticConfig.markCustom(); }
             case 105 -> {
                 KineticConfig.unfocusedFpsTarget = switch (KineticConfig.unfocusedFpsTarget) {
                     case 10 -> 15;
@@ -187,11 +188,10 @@ public final class KineticConfigScreen extends Screen {
             case 203 -> { KineticConfig.minimizeRedundantBufferUploads = !KineticConfig.minimizeRedundantBufferUploads; KineticConfig.markCustom(); }
             case 204 -> { KineticConfig.smartAnimatedTextures = !KineticConfig.smartAnimatedTextures; KineticConfig.markCustom(); }
             case 205 -> { KineticConfig.cullHiddenTileEntities = !KineticConfig.cullHiddenTileEntities; KineticConfig.markCustom(); }
+            case 206 -> { KineticConfig.cacheTextRendererWidths = !KineticConfig.cacheTextRendererWidths; KineticConfig.markCustom(); }
+            case 207 -> { KineticConfig.optimizeWeatherRendering = !KineticConfig.optimizeWeatherRendering; KineticConfig.markCustom(); }
 
             case 300 -> { KineticConfig.deduplicateChunkUpdates = !KineticConfig.deduplicateChunkUpdates; KineticConfig.markCustom(); }
-            case 303 -> { KineticConfig.deduplicateLightUpdates = !KineticConfig.deduplicateLightUpdates; KineticConfig.markCustom(); }
-            case 304 -> { KineticConfig.cacheTextRendererWidths = !KineticConfig.cacheTextRendererWidths; KineticConfig.markCustom(); }
-            case 406 -> { KineticConfig.throttleCrammedEntityCollisions = !KineticConfig.throttleCrammedEntityCollisions; KineticConfig.markCustom(); }
             case 301 -> { KineticConfig.optimizeChunkRebuildQueue = !KineticConfig.optimizeChunkRebuildQueue; KineticConfig.markCustom(); }
             case 302 -> {
                 KineticConfig.maxChunkUploadsPerFrame = switch (KineticConfig.maxChunkUploadsPerFrame) {
@@ -203,16 +203,18 @@ public final class KineticConfigScreen extends Screen {
                 };
                 KineticConfig.markCustom();
             }
+            case 303 -> { KineticConfig.deduplicateLightUpdates = !KineticConfig.deduplicateLightUpdates; KineticConfig.markCustom(); }
+            case 304 -> { KineticConfig.cacheEnumFacingValues = !KineticConfig.cacheEnumFacingValues; KineticConfig.markCustom(); }
 
             case 400 -> { KineticConfig.fastEntityVisibility = !KineticConfig.fastEntityVisibility; KineticConfig.markCustom(); }
             case 401 -> { KineticConfig.skipInvisibleArmorStands = !KineticConfig.skipInvisibleArmorStands; KineticConfig.markCustom(); }
             case 402 -> {
                 KineticConfig.maxEntityRenderDistanceSq = switch (KineticConfig.maxEntityRenderDistanceSq) {
-                    case 1024 -> 2304; // 48m
-                    case 2304 -> 3025; // 55m
-                    case 3025 -> 4096; // 64m
-                    case 4096 -> 9216; // 96m
-                    default -> 1024;   // 32m
+                    case 1024 -> 2304;
+                    case 2304 -> 3025;
+                    case 3025 -> 4096;
+                    case 4096 -> 9216;
+                    default -> 1024;
                 };
                 KineticConfig.markCustom();
             }
@@ -227,15 +229,9 @@ public final class KineticConfigScreen extends Screen {
                 };
                 KineticConfig.markCustom();
             }
-            case 405 -> {
-                KineticConfig.particleRenderDistance = switch (KineticConfig.particleRenderDistance) {
-                    case 24 -> 32;
-                    case 32 -> 48;
-                    case 48 -> 64;
-                    default -> 24;
-                };
-                KineticConfig.markCustom();
-            }
+            case 406 -> { KineticConfig.throttleCrammedEntityCollisions = !KineticConfig.throttleCrammedEntityCollisions; KineticConfig.markCustom(); }
+            case 407 -> { KineticConfig.throttleClumpedItemsAndXp = !KineticConfig.throttleClumpedItemsAndXp; KineticConfig.markCustom(); }
+            case 408 -> { KineticConfig.cullDistantNametags = !KineticConfig.cullDistantNametags; KineticConfig.markCustom(); }
 
             case 500 -> { KineticConfig.fastMathLookup = !KineticConfig.fastMathLookup; KineticConfig.markCustom(); }
             case 501 -> { KineticConfig.reuseRenderBuffers = !KineticConfig.reuseRenderBuffers; KineticConfig.markCustom(); }
@@ -279,7 +275,7 @@ public final class KineticConfigScreen extends Screen {
             Minecraft.getInstance().textRenderer,
             summary,
             centerX,
-            this.height - 44,
+            this.height - 40,
             0xA0E0A0
         );
 
@@ -288,7 +284,7 @@ public final class KineticConfigScreen extends Screen {
                 Minecraft.getInstance().textRenderer,
                 statusBanner,
                 centerX,
-                this.height - 56,
+                this.height - 52,
                 0xFFFF55
             );
         }

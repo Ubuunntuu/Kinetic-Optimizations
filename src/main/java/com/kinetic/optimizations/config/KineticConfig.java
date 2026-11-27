@@ -31,6 +31,7 @@ public final class KineticConfig {
     public static boolean skipInvisibleArmorStands = true;
     public static boolean smartAnimatedTextures = true;
     public static boolean cacheTextRendererWidths = true;
+    public static boolean optimizeWeatherRendering = true;
 
     // 3. Chunks & Lighting
     public static boolean optimizeChunkRebuildQueue = true;
@@ -38,11 +39,15 @@ public final class KineticConfig {
     public static boolean deduplicateLightUpdates = true;
     public static int maxChunkUploadsPerFrame = 4;
 
-    // 4. Entities
+    // 4. Entities, Drops & Nametags
     public static boolean fastEntityVisibility = true;
     public static boolean optimizeEntityDistanceCalc = true;
     public static boolean throttleCrammedEntityCollisions = true;
-    public static int maxEntityRenderDistanceSq = 4096;
+    public static boolean throttleClumpedItemsAndXp = true;
+    public static int maxRenderedDropsPerBlockCell = 8;
+    public static boolean cullDistantNametags = true;
+    public static int maxNametagRenderDistanceSq = 2304; // 48m squared
+    public static int maxEntityRenderDistanceSq = 4096;  // 64m squared
 
     // 5. Particles
     public static boolean batchParticleRendering = true;
@@ -161,6 +166,7 @@ public final class KineticConfig {
         skipInvisibleArmorStands = data.skipInvisibleArmorStands;
         smartAnimatedTextures = data.smartAnimatedTextures;
         cacheTextRendererWidths = data.cacheTextRendererWidths;
+        optimizeWeatherRendering = data.optimizeWeatherRendering;
 
         optimizeChunkRebuildQueue = data.optimizeChunkRebuildQueue;
         deduplicateChunkUpdates = data.deduplicateChunkUpdates;
@@ -170,6 +176,10 @@ public final class KineticConfig {
         fastEntityVisibility = data.fastEntityVisibility;
         optimizeEntityDistanceCalc = data.optimizeEntityDistanceCalc;
         throttleCrammedEntityCollisions = data.throttleCrammedEntityCollisions;
+        throttleClumpedItemsAndXp = data.throttleClumpedItemsAndXp;
+        maxRenderedDropsPerBlockCell = clamp(data.maxRenderedDropsPerBlockCell, 2, 32);
+        cullDistantNametags = data.cullDistantNametags;
+        maxNametagRenderDistanceSq = clamp(data.maxNametagRenderDistanceSq, 256, 16384);
         maxEntityRenderDistanceSq = clamp(data.maxEntityRenderDistanceSq, 256, 65536);
 
         batchParticleRendering = data.batchParticleRendering;
@@ -224,6 +234,7 @@ public final class KineticConfig {
         data.skipInvisibleArmorStands = skipInvisibleArmorStands;
         data.smartAnimatedTextures = smartAnimatedTextures;
         data.cacheTextRendererWidths = cacheTextRendererWidths;
+        data.optimizeWeatherRendering = optimizeWeatherRendering;
 
         data.optimizeChunkRebuildQueue = optimizeChunkRebuildQueue;
         data.deduplicateChunkUpdates = deduplicateChunkUpdates;
@@ -233,6 +244,10 @@ public final class KineticConfig {
         data.fastEntityVisibility = fastEntityVisibility;
         data.optimizeEntityDistanceCalc = optimizeEntityDistanceCalc;
         data.throttleCrammedEntityCollisions = throttleCrammedEntityCollisions;
+        data.throttleClumpedItemsAndXp = throttleClumpedItemsAndXp;
+        data.maxRenderedDropsPerBlockCell = maxRenderedDropsPerBlockCell;
+        data.cullDistantNametags = cullDistantNametags;
+        data.maxNametagRenderDistanceSq = maxNametagRenderDistanceSq;
         data.maxEntityRenderDistanceSq = maxEntityRenderDistanceSq;
 
         data.batchParticleRendering = batchParticleRendering;
@@ -274,6 +289,7 @@ public final class KineticConfig {
                 skipInvisibleArmorStands = false;
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
+                optimizeWeatherRendering = false;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -281,6 +297,10 @@ public final class KineticConfig {
                 fastEntityVisibility = true;
                 optimizeEntityDistanceCalc = true;
                 throttleCrammedEntityCollisions = false;
+                throttleClumpedItemsAndXp = true;
+                maxRenderedDropsPerBlockCell = 12;
+                cullDistantNametags = false;
+                maxNametagRenderDistanceSq = 4096;
                 maxEntityRenderDistanceSq = 4096;
                 batchParticleRendering = true;
                 cullOffscreenParticles = true;
@@ -307,6 +327,7 @@ public final class KineticConfig {
                 skipInvisibleArmorStands = true;
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
+                optimizeWeatherRendering = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -314,6 +335,10 @@ public final class KineticConfig {
                 fastEntityVisibility = true;
                 optimizeEntityDistanceCalc = true;
                 throttleCrammedEntityCollisions = true;
+                throttleClumpedItemsAndXp = true;
+                maxRenderedDropsPerBlockCell = 8;
+                cullDistantNametags = true;
+                maxNametagRenderDistanceSq = 2304;
                 maxEntityRenderDistanceSq = 4096;
                 batchParticleRendering = true;
                 cullOffscreenParticles = true;
@@ -340,6 +365,7 @@ public final class KineticConfig {
                 skipInvisibleArmorStands = true;
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
+                optimizeWeatherRendering = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -347,6 +373,10 @@ public final class KineticConfig {
                 fastEntityVisibility = true;
                 optimizeEntityDistanceCalc = true;
                 throttleCrammedEntityCollisions = true;
+                throttleClumpedItemsAndXp = true;
+                maxRenderedDropsPerBlockCell = 5;
+                cullDistantNametags = true;
+                maxNametagRenderDistanceSq = 1600;
                 maxEntityRenderDistanceSq = 3025;
                 batchParticleRendering = true;
                 cullOffscreenParticles = true;
@@ -373,6 +403,7 @@ public final class KineticConfig {
                 skipInvisibleArmorStands = true;
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
+                optimizeWeatherRendering = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -380,6 +411,10 @@ public final class KineticConfig {
                 fastEntityVisibility = true;
                 optimizeEntityDistanceCalc = true;
                 throttleCrammedEntityCollisions = true;
+                throttleClumpedItemsAndXp = true;
+                maxRenderedDropsPerBlockCell = 3;
+                cullDistantNametags = true;
+                maxNametagRenderDistanceSq = 1024;
                 maxEntityRenderDistanceSq = 2304;
                 batchParticleRendering = true;
                 cullOffscreenParticles = true;
@@ -429,6 +464,7 @@ public final class KineticConfig {
         public boolean skipInvisibleArmorStands = true;
         public boolean smartAnimatedTextures = true;
         public boolean cacheTextRendererWidths = true;
+        public boolean optimizeWeatherRendering = true;
 
         public boolean optimizeChunkRebuildQueue = true;
         public boolean deduplicateChunkUpdates = true;
@@ -438,6 +474,10 @@ public final class KineticConfig {
         public boolean fastEntityVisibility = true;
         public boolean optimizeEntityDistanceCalc = true;
         public boolean throttleCrammedEntityCollisions = true;
+        public boolean throttleClumpedItemsAndXp = true;
+        public int maxRenderedDropsPerBlockCell = 8;
+        public boolean cullDistantNametags = true;
+        public int maxNametagRenderDistanceSq = 2304;
         public int maxEntityRenderDistanceSq = 4096;
 
         public boolean batchParticleRendering = true;

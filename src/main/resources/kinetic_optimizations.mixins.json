@@ -13,13 +13,17 @@
     "GlStateDeduplicationMixin",
     "ChunkRebuildMixin",
     "BlockModelDirectionMixin",
+    "LiquidDirectionCacheMixin",
     "EntityRenderDispatcherMixin",
+    "EntityNametagCullingMixin",
+    "ItemAndXpClumpMixin",
     "BlockEntityRenderDispatcherMixin",
     "ParticleManagerMixin",
     "MathHelperFastTrigMixin",
     "BufferUploaderMixin",
     "TextureAtlasAnimatedMixin",
     "TextRendererCacheMixin",
+    "WeatherRenderMixin",
     "InGameHudMixin"
   ],
   "injectors": {
