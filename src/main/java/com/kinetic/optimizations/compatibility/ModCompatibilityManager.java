@@ -113,7 +113,7 @@ public final class ModCompatibilityManager {
             KineticLogger.warn("[Compatibility] Skipping %s due to external render/shader mod.", simpleMixinName);
             return false;
         }
-        if (disableChunkMixins && "ChunkRebuildMixin".equals(simpleMixinName)) {
+        if (disableChunkMixins && "ChunkRebuildMixin".equals(simpleMixinName) || "WorldLightingMixin".equals(simpleMixinName) || "BlockModelDirectionMixin".equals(simpleMixinName)) {
             KineticLogger.warn("[Compatibility] Skipping %s due to external chunk renderer.", simpleMixinName);
             return false;
         }

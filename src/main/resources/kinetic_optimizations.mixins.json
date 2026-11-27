@@ -4,16 +4,21 @@
   "package": "com.kinetic.optimizations.mixin",
   "compatibilityLevel": "JAVA_21",
   "plugin": "com.kinetic.optimizations.core.KineticMixinPlugin",
+  "mixins": [
+    "WorldLightingMixin"
+  ],
   "client": [
     "MinecraftDiagnosticsMixin",
     "GlStateDeduplicationMixin",
     "ChunkRebuildMixin",
+    "BlockModelDirectionMixin",
     "EntityRenderDispatcherMixin",
     "BlockEntityRenderDispatcherMixin",
     "ParticleManagerMixin",
     "MathHelperFastTrigMixin",
     "BufferUploaderMixin",
     "TextureAtlasAnimatedMixin",
+    "TextRendererCacheMixin",
     "InGameHudMixin"
   ],
   "injectors": {
