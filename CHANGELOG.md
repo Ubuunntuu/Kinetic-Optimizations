@@ -2,12 +2,19 @@
 
 All notable changes to Kinetic Optimizations are documented in this file.
 
-## [1.1.0] - Phase 12: Interactive F7 Settings GUI, Animated Sprite Throttler & Deep Bytecode Release
+## [1.2.0] - Phase 13 & 14: Complete Bytecode Suite, Lighting/Font Caches & Native Java 25 FFM/FMA Engine
 ### Added
-- Implemented KineticConfigScreen (opened via F7): full 5-category clickable in-game GUI screen (General, Render/GPU, Chunks, Entities/Particles, CPU & HUD) with live persistence and Reset to Defaults.
-- Implemented AnimatedSpriteOptimizer and TextureAtlasAnimatedMixin to pause animated texture PCIe uploads while unfocused and pace background sprite ticks during frame-time spikes.
-- Active HEAD Mixin cancellation for EntityRenderDispatcher (distant entities & unnamed invisible ArmorStands), BlockEntityRenderDispatcher (distant/hidden chests, signs, skulls, banners), and duplicate RenderChunk.setDirty calls.
-- Added UnfocusedFpsLimiter (throttles background FPS to 15 FPS when Alt+Tabbed).
+- Native Java 25 Foreign Function & Memory (Arena / MemorySegment) 64-byte cache-line-aligned off-heap buffers in RenderScratchPool.
+- Unrolled hardware Math.fma (x86-64 FMA3) 6-plane AABB frustum testing in FastFrustumCuller.
+- Active ParticleManager::addParticle admission gate enforcing maxActiveParticles and squared render distance before heap allocation.
+- LightingDeduplicator + WorldLightingMixin (32,768-slot generation-stamped 64-bit packed sky/block light check filter).
+- DirectionCache + BlockModelDirectionMixin eliminating Direction.values() array cloning during chunk compilation.
+- TextWidthCache + TextRendererCacheMixin (2,048-slot pixel width cache for scoreboards, tab lists, and nametags).
+- EntityCollisionThrottler + EntityPushThrottleMixin capping client-side crammed entity push scans at 16 entities per 2x2x2 cell.
+- Exposed Light Dedup, Text Width Cache, and Crammed Entity Cap toggles inside the F7 Settings GUI.
 
-## [1.0.0] - Phase 10: Initial Production Release (1.8.9 OneClient)
-- Generation-stamped 16,384-slot ChunkRebuildDeduplicator, 16KB L1D FastMath LUT, GlStateCache, FastFrustumCuller, BottleneckAnalyzer, and F8/F9/F10 hotkeys.
+## [1.1.0] - Phase 11 & 12: Interactive F7 Settings GUI, Animated Sprite Throttler & Deep Bytecode Culling
+- Added KineticConfigScreen (F7), EntityRenderDispatcher/BlockEntityRenderDispatcher HEAD culling, TextureAtlasAnimatedMixin, and UnfocusedFpsLimiter.
+
+## [1.0.0] - Phase 1-10: Initial Production Release (1.8.9 OneClient)
+- Generation-stamped ChunkRebuildDeduplicator, 16KB L1D FastMath LUT, GlStateCache, BottleneckAnalyzer, and F8/F9/F10 hotkeys.

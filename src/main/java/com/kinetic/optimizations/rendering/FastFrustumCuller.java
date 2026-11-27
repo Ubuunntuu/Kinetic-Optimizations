@@ -5,15 +5,21 @@ import com.kinetic.optimizations.config.KineticConfig;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Zero-allocation 6-plane view frustum and squared-distance culler for entities,
- * tile entities, and particle emitters.
+ * Unrolled 6-plane frustum & squared-distance culler utilizing Java 25 hardware Math.fma
+ * (x86-64 FMA3 VFMADD instructions) and zero-allocation register-local plane coefficients.
  */
 public final class FastFrustumCuller {
 
     private static final FastFrustumCuller INSTANCE = new FastFrustumCuller();
 
-    // 6 frustum planes: [planeIndex * 4 + (A, B, C, D)]
-    private final float[] planes = new float[24];
+    // Unrolled register-friendly plane coefficients (Right, Left, Bottom, Top, Far, Near)
+    private float p0a, p0b, p0c, p0d;
+    private float p1a, p1b, p1c, p1d;
+    private float p2a, p2b, p2c, p2d;
+    private float p3a, p3b, p3c, p3d;
+    private float p4a, p4b, p4c, p4d;
+    private float p5a, p5b, p5c, p5d;
+
     private double cameraX = 0.0;
     private double cameraY = 0.0;
     private double cameraZ = 0.0;
@@ -44,39 +50,52 @@ public final class FastFrustumCuller {
         this.cameraZ = z;
     }
 
-    public void updateFrustumPlanes(float[] clipMatrix) {
-        if (clipMatrix == null || clipMatrix.length < 16) {
+    public void updateFrustumPlanes(float[] m) {
+        if (m == null || m.length < 16) {
             planesValid = false;
             return;
         }
+        float inv;
 
-        // Right plane
-        setPlane(0, clipMatrix[3] - clipMatrix[0], clipMatrix[7] - clipMatrix[4], clipMatrix[11] - clipMatrix[8], clipMatrix[15] - clipMatrix[12]);
-        // Left plane
-        setPlane(1, clipMatrix[3] + clipMatrix[0], clipMatrix[7] + clipMatrix[4], clipMatrix[11] + clipMatrix[8], clipMatrix[15] + clipMatrix[12]);
-        // Bottom plane
-        setPlane(2, clipMatrix[3] + clipMatrix[1], clipMatrix[7] + clipMatrix[5], clipMatrix[11] + clipMatrix[9], clipMatrix[15] + clipMatrix[13]);
-        // Top plane
-        setPlane(3, clipMatrix[3] - clipMatrix[1], clipMatrix[7] - clipMatrix[5], clipMatrix[11] - clipMatrix[9], clipMatrix[15] - clipMatrix[13]);
-        // Far plane
-        setPlane(4, clipMatrix[3] - clipMatrix[2], clipMatrix[7] - clipMatrix[6], clipMatrix[11] - clipMatrix[10], clipMatrix[15] - clipMatrix[14]);
-        // Near plane
-        setPlane(5, clipMatrix[3] + clipMatrix[2], clipMatrix[7] + clipMatrix[6], clipMatrix[11] + clipMatrix[10], clipMatrix[15] + clipMatrix[14]);
+        // Plane 0: Right
+        float a = m[3] - m[0], b = m[7] - m[4], c = m[11] - m[8], d = m[15] - m[12];
+        inv = invLength(a, b, c);
+        p0a = a * inv; p0b = b * inv; p0c = c * inv; p0d = d * inv;
+
+        // Plane 1: Left
+        a = m[3] + m[0]; b = m[7] + m[4]; c = m[11] + m[8]; d = m[15] + m[12];
+        inv = invLength(a, b, c);
+        p1a = a * inv; p1b = b * inv; p1c = c * inv; p1d = d * inv;
+
+        // Plane 2: Bottom
+        a = m[3] + m[1]; b = m[7] + m[5]; c = m[11] + m[9]; d = m[15] + m[13];
+        inv = invLength(a, b, c);
+        p2a = a * inv; p2b = b * inv; p2c = c * inv; p2d = d * inv;
+
+        // Plane 3: Top
+        a = m[3] - m[1]; b = m[7] - m[5]; c = m[11] - m[9]; d = m[15] - m[13];
+        inv = invLength(a, b, c);
+        p3a = a * inv; p3b = b * inv; p3c = c * inv; p3d = d * inv;
+
+        // Plane 4: Far
+        a = m[3] - m[2]; b = m[7] - m[6]; c = m[11] - m[10]; d = m[15] - m[14];
+        inv = invLength(a, b, c);
+        p4a = a * inv; p4b = b * inv; p4c = c * inv; p4d = d * inv;
+
+        // Plane 5: Near
+        a = m[3] + m[2]; b = m[7] + m[6]; c = m[11] + m[10]; d = m[15] + m[14];
+        inv = invLength(a, b, c);
+        p5a = a * inv; p5b = b * inv; p5c = c * inv; p5d = d * inv;
 
         planesValid = true;
     }
 
-    private void setPlane(int planeIdx, float a, float b, float c, float d) {
-        float invLen = (float) (1.0 / Math.sqrt(a * a + b * b + c * c));
-        int offset = planeIdx << 2;
-        planes[offset] = a * invLen;
-        planes[offset + 1] = b * invLen;
-        planes[offset + 2] = c * invLen;
-        planes[offset + 3] = d * invLen;
+    private static float invLength(float a, float b, float c) {
+        return (float) (1.0 / Math.sqrt(Math.fma(a, a, Math.fma(b, b, c * c))));
     }
 
     /**
-     * Fast AABB intersection check without allocating a BoundingBox object.
+     * Fully unrolled 6-plane AABB intersection test using hardware FMA3 instructions.
      */
     public boolean isBoxVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         if (!KineticConfig.modEnabled || !KineticConfig.fastFrustumCulling || !planesValid) {
@@ -90,47 +109,46 @@ public final class FastFrustumCuller {
         float fMaxY = (float) (maxY - cameraY);
         float fMaxZ = (float) (maxZ - cameraZ);
 
-        for (int i = 0; i < 24; i += 4) {
-            float a = planes[i];
-            float b = planes[i + 1];
-            float c = planes[i + 2];
-            float d = planes[i + 3];
-
-            float px = a >= 0.0f ? fMaxX : fMinX;
-            float py = b >= 0.0f ? fMaxY : fMinY;
-            float pz = c >= 0.0f ? fMaxZ : fMinZ;
-
-            if ((a * px + b * py + c * pz + d) < 0.0f) {
-                culledObjectsAccumulator.incrementAndGet();
-                return false;
-            }
+        if (planeOutside(p0a, p0b, p0c, p0d, fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ)
+            || planeOutside(p1a, p1b, p1c, p1d, fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ)
+            || planeOutside(p2a, p2b, p2c, p2d, fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ)
+            || planeOutside(p3a, p3b, p3c, p3d, fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ)
+            || planeOutside(p4a, p4b, p4c, p4d, fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ)
+            || planeOutside(p5a, p5b, p5c, p5d, fMinX, fMinY, fMinZ, fMaxX, fMaxY, fMaxZ)) {
+            culledObjectsAccumulator.lazySet(culledObjectsAccumulator.get() + 1);
+            return false;
         }
         return true;
     }
 
-    /**
-     * Squared distance check avoiding Math.sqrt on entity and tile-entity render paths.
-     */
+    private static boolean planeOutside(
+        float a, float b, float c, float d,
+        float minX, float minY, float minZ,
+        float maxX, float maxY, float maxZ
+    ) {
+        float px = a >= 0.0f ? maxX : minX;
+        float py = b >= 0.0f ? maxY : minY;
+        float pz = c >= 0.0f ? maxZ : minZ;
+        return Math.fma(a, px, Math.fma(b, py, Math.fma(c, pz, d))) < 0.0f;
+    }
+
     public boolean isWithinRenderDistanceSq(double x, double y, double z, double maxDistanceSq) {
         double dx = x - cameraX;
         double dy = y - cameraY;
         double dz = z - cameraZ;
-        boolean within = (dx * dx + dy * dy + dz * dz) <= maxDistanceSq;
+        boolean within = Math.fma(dx, dx, Math.fma(dy, dy, dz * dz)) <= maxDistanceSq;
         if (!within) {
-            culledObjectsAccumulator.incrementAndGet();
+            culledObjectsAccumulator.lazySet(culledObjectsAccumulator.get() + 1);
         }
         return within;
     }
 
-    /**
-     * Fast check for decorative invisible armor stands with no custom name or worn equipment.
-     */
     public boolean shouldSkipInvisibleArmorStand(boolean isInvisible, boolean hasCustomName, boolean hasEquipment) {
         if (!KineticConfig.modEnabled || !KineticConfig.skipInvisibleArmorStands) {
             return false;
         }
         if (isInvisible && !hasCustomName && !hasEquipment) {
-            culledObjectsAccumulator.incrementAndGet();
+            culledObjectsAccumulator.lazySet(culledObjectsAccumulator.get() + 1);
             return true;
         }
         return false;

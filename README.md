@@ -1,14 +1,13 @@
-# Kinetic Optimizations (v1.1.0 — Minecraft 1.8.9 OneClient / Ornithe Edition)
+# Kinetic Optimizations (v1.2.0 — Minecraft 1.8.9 OneClient / Ornithe Edition)
 
-Kinetic Optimizations is a low-level Java 25 performance engineering, active bytecode culling, OpenGL state deduplication, chunk scheduling, and real-time frame-pacing telemetry mod for Minecraft Java Edition 1.8.9 running on OneClient (Ornithe Gen-2 / Fabric Loader + OSL).
+Kinetic Optimizations is a low-level Java 25 performance engineering, active bytecode culling, OpenGL state deduplication, lighting/chunk deduplication, and real-time frame-pacing telemetry mod for Minecraft Java Edition 1.8.9 running on OneClient (Ornithe Gen-2 / Fabric Loader + OSL).
 
-## Core Subsystems
-- Interactive In-Game Settings GUI (F7): Native 5-tab configuration menu (General, Render/GPU, Chunks, Entities/Particles, CPU & HUD) with instant live toggles, preset switching, diagnostic export, and one-click Reset to Defaults.
-- Deep Bytecode Culling Pack: Active HEAD Mixin cancellation for distant entities, unnamed invisible marker ArmorStands, distant/off-frustum TileEntities (chests, signs, skulls, banners while preserving global Beacons), 0-vertex BufferUploader calls, and redundant RenderChunk.setDirty rebuilds.
-- Rendering & GPU Engine: Tri-state OpenGL capability deduplication (Blend, DepthTest, AlphaTest, CullFace), multi-unit glBindTexture shadow caching, smart animated sprite PCIe upload throttling, and unfocused window FPS limiting (15 FPS when Alt+Tabbed).
-- Chunk Engine: 16,384-slot generation-stamped 64-bit primitive hash table (6.18 ns/lookup, O(1) tick rollover, zero heap allocations) + frame-time-aware GPU upload budgeting.
-- CPU & Memory Engine: 16 KB L1D-cache-resident trigonometric lookup table (10.5x-11.5x faster than Math.sin/cos on Intel Core i3-10100 + Java 25 JVMCI) and 64-bit register-packed BlockPos math.
-- Diagnostics & Repeatable CSV Benchmarks: Real-time FPS, 1% Low FPS, Frame Time (ms), StdDev Jitter, Allocation Rate (MB/s), GC telemetry, and automatic bottleneck classification.
+## Complete v1.2.0 Optimization Architecture (14 Active Mixins)
+- Interactive 5-Tab Settings GUI (F7): Instant live toggles for every rendering, chunk, lighting, entity, particle, CPU, memory, and HUD subsystem.
+- Java 25 FFM & FMA3 Engine: 64-byte CPU cache-line-aligned off-heap Arena MemorySegments (RenderScratchPool) and unrolled hardware FMA3 6-plane frustum culling (FastFrustumCuller).
+- Lighting & Chunk Engine: 32,768-slot generation-stamped 64-bit sky/block light deduplicator (WorldLightingMixin), 16,384-slot chunk section rebuild deduplicator (ChunkRebuildMixin), Direction.values() static array caching (BlockModelDirectionMixin), and adaptive GPU upload budgeting.
+- Entity, TileEntity & Particle Engine: Active HEAD cancellation for distant entities, unnamed invisible marker ArmorStands, distant/hidden chests/signs/skulls/banners (preserving Beacons), off-range/excess particle spawns (ParticleManagerMixin), and crammed entity client push scans (EntityPushThrottleMixin).
+- GPU, Font & Power Engine: Tri-state OpenGL capability & multi-unit texture bind deduplication, 2,048-slot TextRenderer string width cache (TextRendererCacheMixin), 0-vertex BufferUploader skip, smart animated sprite throttling, and unfocused window FPS limiting (15 FPS when Alt+Tabbed).
 
 ## In-Game Hotkeys
 - F7: Open Interactive 5-Tab Kinetic Settings GUI.
@@ -16,11 +15,11 @@ Kinetic Optimizations is a low-level Java 25 performance engineering, active byt
 - F9: Cycle Performance Presets (Balanced -> Performance -> Extreme -> Ultra).
 - F10: Start a 60-second repeatable benchmark (exports to config/kinetic_ingame_benchmarks.csv and config/kinetic_diagnostics_report.txt).
 
-## Installation & Building (Nobara / Fedora Linux)
+## Building & Recommended Java 25 Flags (Nobara / Fedora Linux)
     ./gradlew clean build
 
 Compiled JAR output:
-    build/libs/KineticOptimizations-1.8.9-OneClient-1.1.0.jar
+    build/libs/KineticOptimizations-1.8.9-OneClient-1.2.0.jar
 
-Recommended OneClient Java 25 JVM Flags:
-    -Xmx4G -Xms4G -XX:+UseZGC -XX:+AlwaysPreTouch
+Recommended OneClient Java 25 JVM Arguments (Generational ZGC + JEP 519 Compact Object Headers):
+    -Xmx4G -Xms4G -XX:+UseZGC -XX:+UseCompactObjectHeaders -XX:+AlwaysPreTouch

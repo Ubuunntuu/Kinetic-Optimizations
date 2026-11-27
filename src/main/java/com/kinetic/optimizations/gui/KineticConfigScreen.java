@@ -88,6 +88,8 @@ public final class KineticConfigScreen extends Screen {
                     toggleText("Adaptive Upload Cap", KineticConfig.optimizeChunkRebuildQueue)));
                 this.buttons.add(new ButtonWidget(302, centerX - 100, y0 + stepY, 200, 20,
                     "Max Chunk Uploads/Frame: " + KineticConfig.maxChunkUploadsPerFrame));
+                this.buttons.add(new ButtonWidget(303, colLeft, y0 + stepY * 2, btnW, 20, toggleText("Light Dedup (64b)", KineticConfig.deduplicateLightUpdates)));
+                this.buttons.add(new ButtonWidget(304, colRight, y0 + stepY * 2, btnW, 20, toggleText("Text Width Cache", KineticConfig.cacheTextRendererWidths)));
             }
             case TAB_ENTITIES -> {
                 this.buttons.add(new ButtonWidget(400, colLeft, y0, btnW, 20,
@@ -103,6 +105,7 @@ public final class KineticConfigScreen extends Screen {
                     "Max Particles: " + KineticConfig.maxActiveParticles));
                 this.buttons.add(new ButtonWidget(405, colRight, y0 + stepY * 2, btnW, 20,
                     "Particle Range: " + KineticConfig.particleRenderDistance + "m"));
+                this.buttons.add(new ButtonWidget(406, centerX - 100, y0 + stepY * 3, 200, 20, toggleText("Crammed Entity Cap (16/cell)", KineticConfig.throttleCrammedEntityCollisions)));
             }
             case TAB_SYSTEM -> {
                 this.buttons.add(new ButtonWidget(500, colLeft, y0, btnW, 20,
@@ -186,6 +189,9 @@ public final class KineticConfigScreen extends Screen {
             case 205 -> { KineticConfig.cullHiddenTileEntities = !KineticConfig.cullHiddenTileEntities; KineticConfig.markCustom(); }
 
             case 300 -> { KineticConfig.deduplicateChunkUpdates = !KineticConfig.deduplicateChunkUpdates; KineticConfig.markCustom(); }
+            case 303 -> { KineticConfig.deduplicateLightUpdates = !KineticConfig.deduplicateLightUpdates; KineticConfig.markCustom(); }
+            case 304 -> { KineticConfig.cacheTextRendererWidths = !KineticConfig.cacheTextRendererWidths; KineticConfig.markCustom(); }
+            case 406 -> { KineticConfig.throttleCrammedEntityCollisions = !KineticConfig.throttleCrammedEntityCollisions; KineticConfig.markCustom(); }
             case 301 -> { KineticConfig.optimizeChunkRebuildQueue = !KineticConfig.optimizeChunkRebuildQueue; KineticConfig.markCustom(); }
             case 302 -> {
                 KineticConfig.maxChunkUploadsPerFrame = switch (KineticConfig.maxChunkUploadsPerFrame) {
