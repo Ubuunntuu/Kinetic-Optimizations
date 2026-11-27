@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "kinetic_optimizations",
+  "version": "${version}",
+  "name": "Kinetic Optimizations",
+  "description": "Extreme rendering, chunk, entity, particle, CPU, and memory optimization engine for Minecraft 1.8.9 on OneClient (Ornithe / Java 25).",
+  "authors": [
+    "Ubuunntuu"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Ubuunntuu/Kinetic-Optimizations",
+    "sources": "https://github.com/Ubuunntuu/Kinetic-Optimizations"
+  },
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": {
+    "preLaunch": [
+      "com.kinetic.optimizations.bootstrap.KineticPreLaunch"
+    ],
+    "client": [
+      "com.kinetic.optimizations.KineticOptimizations"
+    ]
+  },
+  "mixins": [
+    "kinetic_optimizations.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${mc_version}",
+    "java": ">=25"
+  }
+}

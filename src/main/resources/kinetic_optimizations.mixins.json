@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.kinetic.optimizations.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.kinetic.optimizations.core.KineticMixinPlugin",
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
