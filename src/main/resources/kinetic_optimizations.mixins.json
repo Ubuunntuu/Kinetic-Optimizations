@@ -6,7 +6,8 @@
   "plugin": "com.kinetic.optimizations.core.KineticMixinPlugin",
   "client": [
     "MinecraftDiagnosticsMixin",
-    "GlStateDeduplicationMixin"
+    "GlStateDeduplicationMixin",
+    "ChunkRebuildMixin"
   ],
   "injectors": {
     "defaultRequire": 1

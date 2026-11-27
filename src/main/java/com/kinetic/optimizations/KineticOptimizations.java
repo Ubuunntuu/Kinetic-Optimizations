@@ -1,6 +1,7 @@
 package com.kinetic.optimizations;
 
 import com.kinetic.optimizations.bootstrap.KineticPreLaunch;
+import com.kinetic.optimizations.chunks.KineticChunkEngine;
 import com.kinetic.optimizations.config.KineticConfig;
 import com.kinetic.optimizations.core.KineticMixinPlugin;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
@@ -13,7 +14,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "0.3.0-alpha";
+    public static final String MOD_VERSION = "0.4.0-alpha";
 
     private static KineticOptimizations instance;
 
@@ -47,9 +48,10 @@ public final class KineticOptimizations implements ClientModInitializer {
         );
 
         KineticRenderOptimizer.getInstance().onFrameStart();
+        KineticChunkEngine.getInstance().onFrameStart();
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
         KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
-        KineticLogger.info("Phase 3 High-Impact Rendering Engine (GL State Cache, Fast Frustum Culler, Scratch Pool) active.");
+        KineticLogger.info("Phase 4 Chunk Engine (64-bit Section Rebuild Deduplicator, Adaptive Upload Budgeter, Sub-Chunk Visibility Optimizer) active.");
     }
 
     public static KineticOptimizations getInstance() {
