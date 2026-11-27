@@ -2,13 +2,14 @@
 
 All notable changes to Kinetic Optimizations are documented in this file.
 
+## [0.9.0-rc1] - Phase 9: Benchmarking & Automated Verification Suite
+### Added
+- Implemented `KineticBenchmarkSession` for repeatable 60-second in-game preset benchmarks exporting CSV telemetry (`avg_fps`, `one_percent_low_fps`, `avg_frame_ms`, `stddev_jitter_ms`, `avg_alloc_mb_s`, `gc_count_delta`, `gc_time_delta_ms`) to `config/kinetic_ingame_benchmarks.csv`.
+- Added JUnit 5 correctness and hardware microbenchmark suite (`KineticBenchmarkAndVerificationTest`) verifying `FastMathEngine` LUT precision, negative `fastFloor` boundaries, 64-bit chunk key packing, tri-state `GlStateCache`, frustum/armor-stand culling invariants, and preset safety gates while measuring real Java 25 throughput on local hardware.
+
 ## [0.8.0-beta] - Phase 8: Compatibility Engine, Safe Mode & Live In-Game HUD
 ### Added
-- Implemented `ModCompatibilityManager` and `CompatibilityRule` to scan loaded mods and early classloader agents (`OptiFine`, `Sodium`, `Celeritas`, `VeloxCaelo`, `Iris`, `BetterFPS`, `Patcher`, `FoamFix`, `VanillaFix`, `OneConfig`) and surgically bypass only conflicting mixins.
-- Upgraded `KineticMixinPlugin` (`IMixinConfigPlugin`) with per-mixin compatibility gating and applied/skipped mixin telemetry.
-- Added `enableDepthTest`/`disableDepthTest` and `enableAlphaTest`/`disableAlphaTest` tri-state deduplication hooks in `GlStateDeduplicationMixin`.
-- Implemented `InGameHudMixin` to render the real-time 5-line Kinetic telemetry HUD directly onto the in-game screen when `showPerformanceOverlay` is enabled.
-- Upgraded `DiagnosticReportGenerator` to include compatibility advisories and mixin audit counts.
+- Implemented `ModCompatibilityManager`, `CompatibilityRule`, surgical `KineticMixinPlugin` gating, depth/alpha GL state hooks, and `InGameHudMixin`.
 
 ## [0.7.0-alpha] - Phase 7: Advanced Rendering & Resource Engine
 ### Added

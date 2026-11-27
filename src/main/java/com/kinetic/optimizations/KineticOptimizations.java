@@ -17,7 +17,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "0.8.0-beta";
+    public static final String MOD_VERSION = "0.9.0-rc1";
 
     private static KineticOptimizations instance;
 

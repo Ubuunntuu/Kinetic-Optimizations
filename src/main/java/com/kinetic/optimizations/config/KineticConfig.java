@@ -15,10 +15,7 @@ import java.nio.file.Path;
 public final class KineticConfig {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path CONFIG_PATH = FabricLoader.getInstance()
-        .getConfigDir()
-        .resolve("kinetic_optimizations.json");
-
+    private static volatile Path cachedConfigPath;
     private static KineticConfigData data = new KineticConfigData();
 
     // 1. General
@@ -70,16 +67,36 @@ public final class KineticConfig {
     public static boolean enableExperimentalOptimizations = false;
     public static boolean aggressiveOcclusionCulling = false;
 
-    // 11. Diagnostics
+    // 11. Diagnostics & Benchmarking
     public static boolean showPerformanceOverlay = false;
     public static boolean enableBottleneckAnalyzer = true;
     public static boolean debugLogging = false;
+    public static boolean runSixtySecondBenchmark = false;
 
     private KineticConfig() {
     }
 
+    private static Path resolveConfigPath() {
+        Path existing = cachedConfigPath;
+        if (existing != null) {
+            return existing;
+        }
+        try {
+            FabricLoader loader = FabricLoader.getInstance();
+            if (loader != null && loader.getConfigDir() != null) {
+                cachedConfigPath = loader.getConfigDir().resolve("kinetic_optimizations.json");
+                return cachedConfigPath;
+            }
+        } catch (Throwable ignored) {
+            // Standalone JUnit / benchmark environment without active Fabric GameProvider
+        }
+        cachedConfigPath = Path.of("build", "test-config", "kinetic_optimizations.json");
+        return cachedConfigPath;
+    }
+
     public static synchronized void init() {
-        if (Files.exists(CONFIG_PATH)) {
+        Path path = resolveConfigPath();
+        if (Files.exists(path)) {
             load();
         } else {
             applyPreset(PerformancePreset.PERFORMANCE);
@@ -88,7 +105,8 @@ public final class KineticConfig {
     }
 
     public static synchronized void load() {
-        try (Reader reader = Files.newBufferedReader(CONFIG_PATH, StandardCharsets.UTF_8)) {
+        Path path = resolveConfigPath();
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             KineticConfigData loaded = GSON.fromJson(reader, KineticConfigData.class);
             if (loaded != null) {
                 data = loaded;
@@ -108,10 +126,11 @@ public final class KineticConfig {
     }
 
     public static synchronized void save() {
+        Path path = resolveConfigPath();
         syncStaticFlagsToData();
         try {
-            Files.createDirectories(CONFIG_PATH.getParent());
-            try (Writer writer = Files.newBufferedWriter(CONFIG_PATH, StandardCharsets.UTF_8)) {
+            Files.createDirectories(path.getParent());
+            try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
                 GSON.toJson(data, writer);
             }
         } catch (IOException e) {
@@ -168,6 +187,7 @@ public final class KineticConfig {
         showPerformanceOverlay = data.showPerformanceOverlay;
         enableBottleneckAnalyzer = data.enableBottleneckAnalyzer;
         debugLogging = data.debugLogging;
+        runSixtySecondBenchmark = data.runSixtySecondBenchmark;
 
         if (activePreset != PerformancePreset.CUSTOM) {
             applyPreset(activePreset);
@@ -224,6 +244,7 @@ public final class KineticConfig {
         data.showPerformanceOverlay = showPerformanceOverlay;
         data.enableBottleneckAnalyzer = enableBottleneckAnalyzer;
         data.debugLogging = debugLogging;
+        data.runSixtySecondBenchmark = runSixtySecondBenchmark;
     }
 
     public static void applyPreset(PerformancePreset preset) {
@@ -347,7 +368,7 @@ public final class KineticConfig {
     }
 
     public static Path getConfigPath() {
-        return CONFIG_PATH;
+        return resolveConfigPath();
     }
 
     public static final class KineticConfigData {
@@ -394,5 +415,6 @@ public final class KineticConfig {
         public boolean showPerformanceOverlay = false;
         public boolean enableBottleneckAnalyzer = true;
         public boolean debugLogging = false;
+        public boolean runSixtySecondBenchmark = false;
     }
 }

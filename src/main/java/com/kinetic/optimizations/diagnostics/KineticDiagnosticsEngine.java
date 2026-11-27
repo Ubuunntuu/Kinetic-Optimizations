@@ -2,12 +2,13 @@ package com.kinetic.optimizations.diagnostics;
 
 import com.kinetic.optimizations.config.KineticConfig;
 import com.kinetic.optimizations.performance.FrameTimeTracker;
+import com.kinetic.optimizations.performance.KineticBenchmarkSession;
 import com.kinetic.optimizations.performance.MemoryAndGcTracker;
 import com.kinetic.optimizations.performance.WorldRenderStats;
 import com.kinetic.optimizations.utilities.KineticLogger;
 
 /**
- * Central coordinator for all Phase 2 performance monitoring and bottleneck diagnostics.
+ * Central coordinator for performance monitoring, bottleneck diagnostics, and 60s benchmark sessions.
  */
 public final class KineticDiagnosticsEngine {
 
@@ -17,9 +18,10 @@ public final class KineticDiagnosticsEngine {
     private final MemoryAndGcTracker memoryAndGcTracker = new MemoryAndGcTracker();
     private final WorldRenderStats worldRenderStats = new WorldRenderStats();
     private final BottleneckAnalyzer bottleneckAnalyzer = new BottleneckAnalyzer();
+    private final KineticBenchmarkSession benchmarkSession = new KineticBenchmarkSession();
 
     private long lastPeriodicLogNs = System.nanoTime();
-    private static final long PERIODIC_LOG_INTERVAL_NS = 30_000_000_000L; // 30 seconds when debugLogging enabled
+    private static final long PERIODIC_LOG_INTERVAL_NS = 30_000_000_000L;
 
     private KineticDiagnosticsEngine() {
     }
@@ -36,6 +38,7 @@ public final class KineticDiagnosticsEngine {
         memoryAndGcTracker.updateIfDue();
         worldRenderStats.onFrameTick();
         bottleneckAnalyzer.evaluate(frameTimeTracker, memoryAndGcTracker, worldRenderStats);
+        benchmarkSession.onFrame(memoryAndGcTracker, worldRenderStats);
 
         if (KineticConfig.debugLogging) {
             long now = System.nanoTime();
@@ -76,5 +79,9 @@ public final class KineticDiagnosticsEngine {
 
     public BottleneckAnalyzer getBottleneckAnalyzer() {
         return bottleneckAnalyzer;
+    }
+
+    public KineticBenchmarkSession getBenchmarkSession() {
+        return benchmarkSession;
     }
 }
