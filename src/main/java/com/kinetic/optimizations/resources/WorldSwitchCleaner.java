@@ -19,6 +19,8 @@ public final class WorldSwitchCleaner {
 
     public static void onWorldChanged() {
         GlStateCache.invalidateAll();
+        com.kinetic.optimizations.networking.FastStringInterner.getInstance().clear();
+        com.kinetic.optimizations.rendering.PrimitiveQuadSorter.getInstance().invalidateSortAnchor();
         KineticChunkEngine.getInstance().onClientTick();
         LightingDeduplicator.getInstance().onTickRollover();
         EntityCollisionThrottler.getInstance().onTickRollover();

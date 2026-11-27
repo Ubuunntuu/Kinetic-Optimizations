@@ -6,7 +6,8 @@
   "plugin": "com.kinetic.optimizations.core.KineticMixinPlugin",
   "mixins": [
     "WorldLightingMixin",
-    "EntityPushThrottleMixin"
+    "EntityPushThrottleMixin",
+    "PacketStringInternMixin"
   ],
   "client": [
     "MinecraftDiagnosticsMixin",
@@ -14,6 +15,9 @@
     "ChunkRebuildMixin",
     "BlockModelDirectionMixin",
     "LiquidDirectionCacheMixin",
+    "BakedQuadDeduplicationMixin",
+    "BufferBuilderSortMixin",
+    "WorldRendererSkyCloudMixin",
     "EntityRenderDispatcherMixin",
     "EntityNametagCullingMixin",
     "ItemAndXpClumpMixin",

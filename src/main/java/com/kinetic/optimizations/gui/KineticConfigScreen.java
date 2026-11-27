@@ -34,17 +34,17 @@ public final class KineticConfigScreen extends Screen {
         int tabWidth = 76;
         int tabStartX = centerX - ((tabWidth * 5 + 16) / 2);
 
-        this.buttons.add(makeTabButton(1, tabStartX, 26, tabWidth, "General", activeTab == TAB_GENERAL));
-        this.buttons.add(makeTabButton(2, tabStartX + (tabWidth + 4), 26, tabWidth, "Render/GPU", activeTab == TAB_RENDER));
-        this.buttons.add(makeTabButton(3, tabStartX + (tabWidth + 4) * 2, 26, tabWidth, "Chunks/Light", activeTab == TAB_CHUNKS));
-        this.buttons.add(makeTabButton(4, tabStartX + (tabWidth + 4) * 3, 26, tabWidth, "Ent/Drops", activeTab == TAB_ENTITIES));
-        this.buttons.add(makeTabButton(5, tabStartX + (tabWidth + 4) * 4, 26, tabWidth, "CPU & HUD", activeTab == TAB_SYSTEM));
+        this.buttons.add(makeTabButton(1, tabStartX, 24, tabWidth, "General", activeTab == TAB_GENERAL));
+        this.buttons.add(makeTabButton(2, tabStartX + (tabWidth + 4), 24, tabWidth, "Render/GPU", activeTab == TAB_RENDER));
+        this.buttons.add(makeTabButton(3, tabStartX + (tabWidth + 4) * 2, 24, tabWidth, "Chunks/Model", activeTab == TAB_CHUNKS));
+        this.buttons.add(makeTabButton(4, tabStartX + (tabWidth + 4) * 3, 24, tabWidth, "Ent/Drops", activeTab == TAB_ENTITIES));
+        this.buttons.add(makeTabButton(5, tabStartX + (tabWidth + 4) * 4, 24, tabWidth, "CPU & HUD", activeTab == TAB_SYSTEM));
 
         int colLeft = centerX - 155;
         int colRight = centerX + 5;
         int btnW = 150;
-        int y0 = 54;
-        int stepY = 23;
+        int y0 = 50;
+        int stepY = 22;
 
         switch (activeTab) {
             case TAB_GENERAL -> {
@@ -79,19 +79,21 @@ public final class KineticConfigScreen extends Screen {
                 this.buttons.add(new ButtonWidget(206, colLeft, y0 + stepY * 3, btnW, 20,
                     toggleText("Text Width Cache", KineticConfig.cacheTextRendererWidths)));
                 this.buttons.add(new ButtonWidget(207, colRight, y0 + stepY * 3, btnW, 20,
-                    toggleText("Weather Guard", KineticConfig.optimizeWeatherRendering)));
+                    toggleText("Cave Sky/Cloud Cull", KineticConfig.cullUndergroundSkyAndClouds)));
             }
             case TAB_CHUNKS -> {
                 this.buttons.add(new ButtonWidget(300, colLeft, y0, btnW, 20,
                     toggleText("Chunk Dedup (64b)", KineticConfig.deduplicateChunkUpdates)));
                 this.buttons.add(new ButtonWidget(301, colRight, y0, btnW, 20,
-                    toggleText("Adaptive Upload Cap", KineticConfig.optimizeChunkRebuildQueue)));
+                    toggleText("Fast Quad Sort", KineticConfig.primitiveTranslucentSort)));
                 this.buttons.add(new ButtonWidget(303, colLeft, y0 + stepY, btnW, 20,
                     toggleText("Light Dedup (64b)", KineticConfig.deduplicateLightUpdates)));
                 this.buttons.add(new ButtonWidget(304, colRight, y0 + stepY, btnW, 20,
+                    toggleText("BakedQuad Dedup", KineticConfig.deduplicateBakedModelQuads)));
+                this.buttons.add(new ButtonWidget(305, colLeft, y0 + stepY * 2, btnW, 20,
                     toggleText("Fluid Dir Cache", KineticConfig.cacheEnumFacingValues)));
-                this.buttons.add(new ButtonWidget(302, centerX - 100, y0 + stepY * 2, 200, 20,
-                    "Max Chunk Uploads/Frame: " + KineticConfig.maxChunkUploadsPerFrame));
+                this.buttons.add(new ButtonWidget(302, colRight, y0 + stepY * 2, btnW, 20,
+                    "Uploads/Frame: " + KineticConfig.maxChunkUploadsPerFrame));
             }
             case TAB_ENTITIES -> {
                 this.buttons.add(new ButtonWidget(400, colLeft, y0, btnW, 20,
@@ -116,14 +118,18 @@ public final class KineticConfigScreen extends Screen {
                 this.buttons.add(new ButtonWidget(500, colLeft, y0, btnW, 20,
                     toggleText("16KB FastMath LUT", KineticConfig.fastMathLookup)));
                 this.buttons.add(new ButtonWidget(501, colRight, y0, btnW, 20,
-                    toggleText("Java 25 FFM Arena", KineticConfig.reuseRenderBuffers)));
+                    toggleText("Packet Str Intern", KineticConfig.internScoreboardAndPacketStrings)));
                 this.buttons.add(new ButtonWidget(502, colLeft, y0 + stepY, btnW, 20,
                     toggleText("HUD Overlay (F8)", KineticConfig.showPerformanceOverlay)));
-                this.buttons.add(new ButtonWidget(503, colRight, y0 + stepY, btnW, 20,
-                    toggleText("Bottleneck Analyzer", KineticConfig.enableBottleneckAnalyzer)));
-                this.buttons.add(new ButtonWidget(504, colLeft, y0 + stepY * 2, btnW, 20,
+                this.buttons.add(new ButtonWidget(506, colRight, y0 + stepY, btnW, 20,
+                    toggleText("120f Sparkline", KineticConfig.showFrameTimeGraph)));
+                this.buttons.add(new ButtonWidget(507, colLeft, y0 + stepY * 2, btnW, 20,
+                    "HUD Dock: " + KineticConfig.getHudCornerLabel()));
+                this.buttons.add(new ButtonWidget(503, colRight, y0 + stepY * 2, btnW, 20,
+                    toggleText("Bottleneck AI", KineticConfig.enableBottleneckAnalyzer)));
+                this.buttons.add(new ButtonWidget(504, colLeft, y0 + stepY * 3, btnW, 20,
                     "Export Diag Report"));
-                this.buttons.add(new ButtonWidget(505, colRight, y0 + stepY * 2, btnW, 20,
+                this.buttons.add(new ButtonWidget(505, colRight, y0 + stepY * 3, btnW, 20,
                     "Run 60s CSV Benchmark"));
             }
         }
@@ -189,10 +195,10 @@ public final class KineticConfigScreen extends Screen {
             case 204 -> { KineticConfig.smartAnimatedTextures = !KineticConfig.smartAnimatedTextures; KineticConfig.markCustom(); }
             case 205 -> { KineticConfig.cullHiddenTileEntities = !KineticConfig.cullHiddenTileEntities; KineticConfig.markCustom(); }
             case 206 -> { KineticConfig.cacheTextRendererWidths = !KineticConfig.cacheTextRendererWidths; KineticConfig.markCustom(); }
-            case 207 -> { KineticConfig.optimizeWeatherRendering = !KineticConfig.optimizeWeatherRendering; KineticConfig.markCustom(); }
+            case 207 -> { KineticConfig.cullUndergroundSkyAndClouds = !KineticConfig.cullUndergroundSkyAndClouds; KineticConfig.markCustom(); }
 
             case 300 -> { KineticConfig.deduplicateChunkUpdates = !KineticConfig.deduplicateChunkUpdates; KineticConfig.markCustom(); }
-            case 301 -> { KineticConfig.optimizeChunkRebuildQueue = !KineticConfig.optimizeChunkRebuildQueue; KineticConfig.markCustom(); }
+            case 301 -> { KineticConfig.primitiveTranslucentSort = !KineticConfig.primitiveTranslucentSort; KineticConfig.markCustom(); }
             case 302 -> {
                 KineticConfig.maxChunkUploadsPerFrame = switch (KineticConfig.maxChunkUploadsPerFrame) {
                     case 2 -> 4;
@@ -204,7 +210,8 @@ public final class KineticConfigScreen extends Screen {
                 KineticConfig.markCustom();
             }
             case 303 -> { KineticConfig.deduplicateLightUpdates = !KineticConfig.deduplicateLightUpdates; KineticConfig.markCustom(); }
-            case 304 -> { KineticConfig.cacheEnumFacingValues = !KineticConfig.cacheEnumFacingValues; KineticConfig.markCustom(); }
+            case 304 -> { KineticConfig.deduplicateBakedModelQuads = !KineticConfig.deduplicateBakedModelQuads; KineticConfig.markCustom(); }
+            case 305 -> { KineticConfig.cacheEnumFacingValues = !KineticConfig.cacheEnumFacingValues; KineticConfig.markCustom(); }
 
             case 400 -> { KineticConfig.fastEntityVisibility = !KineticConfig.fastEntityVisibility; KineticConfig.markCustom(); }
             case 401 -> { KineticConfig.skipInvisibleArmorStands = !KineticConfig.skipInvisibleArmorStands; KineticConfig.markCustom(); }
@@ -234,8 +241,10 @@ public final class KineticConfigScreen extends Screen {
             case 408 -> { KineticConfig.cullDistantNametags = !KineticConfig.cullDistantNametags; KineticConfig.markCustom(); }
 
             case 500 -> { KineticConfig.fastMathLookup = !KineticConfig.fastMathLookup; KineticConfig.markCustom(); }
-            case 501 -> { KineticConfig.reuseRenderBuffers = !KineticConfig.reuseRenderBuffers; KineticConfig.markCustom(); }
+            case 501 -> { KineticConfig.internScoreboardAndPacketStrings = !KineticConfig.internScoreboardAndPacketStrings; KineticConfig.markCustom(); }
             case 502 -> KineticConfig.showPerformanceOverlay = !KineticConfig.showPerformanceOverlay;
+            case 506 -> KineticConfig.showFrameTimeGraph = !KineticConfig.showFrameTimeGraph;
+            case 507 -> KineticConfig.hudCornerPosition = (KineticConfig.hudCornerPosition + 1) & 3;
             case 503 -> KineticConfig.enableBottleneckAnalyzer = !KineticConfig.enableBottleneckAnalyzer;
             case 504 -> {
                 KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
@@ -266,7 +275,7 @@ public final class KineticConfigScreen extends Screen {
             Minecraft.getInstance().textRenderer,
             String.format(Locale.ROOT, "Kinetic Optimizations v%s — Settings [F7]", KineticOptimizations.MOD_VERSION),
             centerX,
-            10,
+            8,
             0x55FFFF
         );
 
@@ -275,7 +284,7 @@ public final class KineticConfigScreen extends Screen {
             Minecraft.getInstance().textRenderer,
             summary,
             centerX,
-            this.height - 40,
+            this.height - 38,
             0xA0E0A0
         );
 
@@ -284,7 +293,7 @@ public final class KineticConfigScreen extends Screen {
                 Minecraft.getInstance().textRenderer,
                 statusBanner,
                 centerX,
-                this.height - 52,
+                this.height - 50,
                 0xFFFF55
             );
         }

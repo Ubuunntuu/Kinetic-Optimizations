@@ -53,7 +53,7 @@ public final class TextWidthCache {
 
         int slot = (mixHash(text.hashCode())) & CACHE_MASK;
         String cachedKey = keys[slot];
-        if (cachedKey != null && cachedKey.equals(text)) {
+        if (cachedKey == text || (cachedKey != null && cachedKey.equals(text))) {
             cacheHitsAccumulator.lazySet(cacheHitsAccumulator.get() + 1);
             return widths[slot];
         }

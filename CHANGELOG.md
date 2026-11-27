@@ -18,3 +18,12 @@ All notable changes to Kinetic Optimizations are documented in this file.
 
 ## [1.0.0] - Phase 1-10: Initial Production Release (1.8.9 OneClient)
 - Generation-stamped ChunkRebuildDeduplicator, 16KB L1D FastMath LUT, GlStateCache, BottleneckAnalyzer, and F8/F9/F10 hotkeys.
+
+## [1.4.0] - 23 Active Mixins: Primitive Quad Sort, Cave Sky/Cloud Culling, Model/Packet Deduplication & 120-Frame Sparkline HUD
+### Added
+- PrimitiveQuadSorter + BufferBuilderSortMixin: Camera-delta sort hysteresis + zero-allocation primitive translucent quad quicksort.
+- SkyAndCloudCuller + WorldRendererSkyCloudMixin: Skips sky dome, star VBO, and 3D cloud passes in deep zero-skylight caves.
+- ScalarBoxMath: Zero-allocation primitive 6-double AABB offset/intersection math.
+- ModelVertexDeduplicator + BakedQuadDeduplicationMixin: 4,096-slot canonical pool sharing identical int[28] BakedQuad vertex arrays.
+- FastStringInterner + PacketStringInternMixin: 2,048-slot lock-free canonicalizer for scoreboard, tab-list, and network strings (enabling 1-cycle == hits in TextWidthCache).
+- 120-Frame Live Colored Frame-Time Sparkline Graph + 4-Corner HUD Docking (Top-Left, Top-Right, Bottom-Left, Bottom-Right) in F7 & F8.

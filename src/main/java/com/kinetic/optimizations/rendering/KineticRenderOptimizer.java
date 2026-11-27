@@ -25,6 +25,8 @@ public final class KineticRenderOptimizer {
         GlStateCache.onFrameStart();
         FastFrustumCuller.getInstance().onFrameStart();
         bufferUploadOptimizer.onFrameStart();
+        PrimitiveQuadSorter.getInstance().onFrameStart();
+        SkyAndCloudCuller.getInstance().onFrameStart();
     }
 
     public int getSavedGlCallsPerSecond() {

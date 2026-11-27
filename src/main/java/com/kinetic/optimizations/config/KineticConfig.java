@@ -32,6 +32,8 @@ public final class KineticConfig {
     public static boolean smartAnimatedTextures = true;
     public static boolean cacheTextRendererWidths = true;
     public static boolean optimizeWeatherRendering = true;
+    public static boolean cullUndergroundSkyAndClouds = true;
+    public static boolean primitiveTranslucentSort = true;
 
     // 3. Chunks & Lighting
     public static boolean optimizeChunkRebuildQueue = true;
@@ -46,8 +48,8 @@ public final class KineticConfig {
     public static boolean throttleClumpedItemsAndXp = true;
     public static int maxRenderedDropsPerBlockCell = 8;
     public static boolean cullDistantNametags = true;
-    public static int maxNametagRenderDistanceSq = 2304; // 48m squared
-    public static int maxEntityRenderDistanceSq = 4096;  // 64m squared
+    public static int maxNametagRenderDistanceSq = 2304;
+    public static int maxEntityRenderDistanceSq = 4096;
 
     // 5. Particles
     public static boolean batchParticleRendering = true;
@@ -55,10 +57,11 @@ public final class KineticConfig {
     public static int maxActiveParticles = 4000;
     public static int particleRenderDistance = 48;
 
-    // 6. Memory
+    // 6. Memory & Models
     public static boolean reduceBlockPosAllocations = true;
     public static boolean cacheEnumFacingValues = true;
     public static boolean reuseRenderBuffers = true;
+    public static boolean deduplicateBakedModelQuads = true;
 
     // 7. CPU
     public static boolean fastMathLookup = true;
@@ -70,21 +73,33 @@ public final class KineticConfig {
     public static boolean limitUnfocusedFps = true;
     public static int unfocusedFpsTarget = 15;
 
-    // 9. Networking
+    // 9. Networking & Strings
     public static boolean optimizePacketProcessing = true;
     public static boolean reducePacketAllocations = true;
+    public static boolean internScoreboardAndPacketStrings = true;
 
     // 10. Advanced
     public static boolean enableExperimentalOptimizations = false;
     public static boolean aggressiveOcclusionCulling = false;
 
-    // 11. Diagnostics & Benchmarking
+    // 11. Diagnostics, Sparkline & HUD Corner (0=Top-Left, 1=Top-Right, 2=Bottom-Left, 3=Bottom-Right)
     public static boolean showPerformanceOverlay = false;
+    public static boolean showFrameTimeGraph = true;
+    public static int hudCornerPosition = 0;
     public static boolean enableBottleneckAnalyzer = true;
     public static boolean debugLogging = false;
     public static boolean runSixtySecondBenchmark = false;
 
     private KineticConfig() {
+    }
+
+    public static String getHudCornerLabel() {
+        return switch (hudCornerPosition & 3) {
+            case 1 -> "Top-Right";
+            case 2 -> "Bottom-Left";
+            case 3 -> "Bottom-Right";
+            default -> "Top-Left";
+        };
     }
 
     private static Path resolveConfigPath() {
@@ -167,6 +182,8 @@ public final class KineticConfig {
         smartAnimatedTextures = data.smartAnimatedTextures;
         cacheTextRendererWidths = data.cacheTextRendererWidths;
         optimizeWeatherRendering = data.optimizeWeatherRendering;
+        cullUndergroundSkyAndClouds = data.cullUndergroundSkyAndClouds;
+        primitiveTranslucentSort = data.primitiveTranslucentSort;
 
         optimizeChunkRebuildQueue = data.optimizeChunkRebuildQueue;
         deduplicateChunkUpdates = data.deduplicateChunkUpdates;
@@ -190,6 +207,7 @@ public final class KineticConfig {
         reduceBlockPosAllocations = data.reduceBlockPosAllocations;
         cacheEnumFacingValues = data.cacheEnumFacingValues;
         reuseRenderBuffers = data.reuseRenderBuffers;
+        deduplicateBakedModelQuads = data.deduplicateBakedModelQuads;
 
         fastMathLookup = data.fastMathLookup;
         optimizeClientTickLoop = data.optimizeClientTickLoop;
@@ -201,11 +219,14 @@ public final class KineticConfig {
 
         optimizePacketProcessing = data.optimizePacketProcessing;
         reducePacketAllocations = data.reducePacketAllocations;
+        internScoreboardAndPacketStrings = data.internScoreboardAndPacketStrings;
 
         enableExperimentalOptimizations = data.enableExperimentalOptimizations;
         aggressiveOcclusionCulling = data.aggressiveOcclusionCulling;
 
         showPerformanceOverlay = data.showPerformanceOverlay;
+        showFrameTimeGraph = data.showFrameTimeGraph;
+        hudCornerPosition = clamp(data.hudCornerPosition, 0, 3);
         enableBottleneckAnalyzer = data.enableBottleneckAnalyzer;
         debugLogging = data.debugLogging;
         runSixtySecondBenchmark = data.runSixtySecondBenchmark;
@@ -235,6 +256,8 @@ public final class KineticConfig {
         data.smartAnimatedTextures = smartAnimatedTextures;
         data.cacheTextRendererWidths = cacheTextRendererWidths;
         data.optimizeWeatherRendering = optimizeWeatherRendering;
+        data.cullUndergroundSkyAndClouds = cullUndergroundSkyAndClouds;
+        data.primitiveTranslucentSort = primitiveTranslucentSort;
 
         data.optimizeChunkRebuildQueue = optimizeChunkRebuildQueue;
         data.deduplicateChunkUpdates = deduplicateChunkUpdates;
@@ -258,6 +281,7 @@ public final class KineticConfig {
         data.reduceBlockPosAllocations = reduceBlockPosAllocations;
         data.cacheEnumFacingValues = cacheEnumFacingValues;
         data.reuseRenderBuffers = reuseRenderBuffers;
+        data.deduplicateBakedModelQuads = deduplicateBakedModelQuads;
 
         data.fastMathLookup = fastMathLookup;
         data.optimizeClientTickLoop = optimizeClientTickLoop;
@@ -269,11 +293,14 @@ public final class KineticConfig {
 
         data.optimizePacketProcessing = optimizePacketProcessing;
         data.reducePacketAllocations = reducePacketAllocations;
+        data.internScoreboardAndPacketStrings = internScoreboardAndPacketStrings;
 
         data.enableExperimentalOptimizations = enableExperimentalOptimizations;
         data.aggressiveOcclusionCulling = aggressiveOcclusionCulling;
 
         data.showPerformanceOverlay = showPerformanceOverlay;
+        data.showFrameTimeGraph = showFrameTimeGraph;
+        data.hudCornerPosition = hudCornerPosition;
         data.enableBottleneckAnalyzer = enableBottleneckAnalyzer;
         data.debugLogging = debugLogging;
         data.runSixtySecondBenchmark = runSixtySecondBenchmark;
@@ -290,6 +317,8 @@ public final class KineticConfig {
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
                 optimizeWeatherRendering = false;
+                cullUndergroundSkyAndClouds = true;
+                primitiveTranslucentSort = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -309,6 +338,7 @@ public final class KineticConfig {
                 reduceBlockPosAllocations = true;
                 cacheEnumFacingValues = true;
                 reuseRenderBuffers = false;
+                deduplicateBakedModelQuads = true;
                 fastMathLookup = false;
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
@@ -317,6 +347,7 @@ public final class KineticConfig {
                 unfocusedFpsTarget = 30;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = false;
+                internScoreboardAndPacketStrings = true;
                 enableExperimentalOptimizations = false;
                 aggressiveOcclusionCulling = false;
             }
@@ -328,6 +359,8 @@ public final class KineticConfig {
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
                 optimizeWeatherRendering = true;
+                cullUndergroundSkyAndClouds = true;
+                primitiveTranslucentSort = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -347,6 +380,7 @@ public final class KineticConfig {
                 reduceBlockPosAllocations = true;
                 cacheEnumFacingValues = true;
                 reuseRenderBuffers = true;
+                deduplicateBakedModelQuads = true;
                 fastMathLookup = true;
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
@@ -355,6 +389,7 @@ public final class KineticConfig {
                 unfocusedFpsTarget = 15;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = true;
+                internScoreboardAndPacketStrings = true;
                 enableExperimentalOptimizations = false;
                 aggressiveOcclusionCulling = false;
             }
@@ -366,6 +401,8 @@ public final class KineticConfig {
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
                 optimizeWeatherRendering = true;
+                cullUndergroundSkyAndClouds = true;
+                primitiveTranslucentSort = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -385,6 +422,7 @@ public final class KineticConfig {
                 reduceBlockPosAllocations = true;
                 cacheEnumFacingValues = true;
                 reuseRenderBuffers = true;
+                deduplicateBakedModelQuads = true;
                 fastMathLookup = true;
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
@@ -393,6 +431,7 @@ public final class KineticConfig {
                 unfocusedFpsTarget = 15;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = true;
+                internScoreboardAndPacketStrings = true;
                 enableExperimentalOptimizations = false;
                 aggressiveOcclusionCulling = false;
             }
@@ -404,6 +443,8 @@ public final class KineticConfig {
                 smartAnimatedTextures = true;
                 cacheTextRendererWidths = true;
                 optimizeWeatherRendering = true;
+                cullUndergroundSkyAndClouds = true;
+                primitiveTranslucentSort = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 deduplicateLightUpdates = true;
@@ -423,6 +464,7 @@ public final class KineticConfig {
                 reduceBlockPosAllocations = true;
                 cacheEnumFacingValues = true;
                 reuseRenderBuffers = true;
+                deduplicateBakedModelQuads = true;
                 fastMathLookup = true;
                 optimizeClientTickLoop = true;
                 deduplicateTextureBinds = true;
@@ -431,6 +473,7 @@ public final class KineticConfig {
                 unfocusedFpsTarget = 10;
                 optimizePacketProcessing = true;
                 reducePacketAllocations = true;
+                internScoreboardAndPacketStrings = true;
                 enableExperimentalOptimizations = false;
                 aggressiveOcclusionCulling = false;
             }
@@ -465,6 +508,8 @@ public final class KineticConfig {
         public boolean smartAnimatedTextures = true;
         public boolean cacheTextRendererWidths = true;
         public boolean optimizeWeatherRendering = true;
+        public boolean cullUndergroundSkyAndClouds = true;
+        public boolean primitiveTranslucentSort = true;
 
         public boolean optimizeChunkRebuildQueue = true;
         public boolean deduplicateChunkUpdates = true;
@@ -488,6 +533,7 @@ public final class KineticConfig {
         public boolean reduceBlockPosAllocations = true;
         public boolean cacheEnumFacingValues = true;
         public boolean reuseRenderBuffers = true;
+        public boolean deduplicateBakedModelQuads = true;
 
         public boolean fastMathLookup = true;
         public boolean optimizeClientTickLoop = true;
@@ -499,11 +545,14 @@ public final class KineticConfig {
 
         public boolean optimizePacketProcessing = true;
         public boolean reducePacketAllocations = true;
+        public boolean internScoreboardAndPacketStrings = true;
 
         public boolean enableExperimentalOptimizations = false;
         public boolean aggressiveOcclusionCulling = false;
 
         public boolean showPerformanceOverlay = false;
+        public boolean showFrameTimeGraph = true;
+        public int hudCornerPosition = 0;
         public boolean enableBottleneckAnalyzer = true;
         public boolean debugLogging = false;
         public boolean runSixtySecondBenchmark = false;
