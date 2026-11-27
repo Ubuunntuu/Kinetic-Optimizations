@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "plugin": "com.kinetic.optimizations.core.KineticMixinPlugin",
   "client": [
-    "MinecraftDiagnosticsMixin"
+    "MinecraftDiagnosticsMixin",
+    "GlStateDeduplicationMixin"
   ],
   "injectors": {
     "defaultRequire": 1

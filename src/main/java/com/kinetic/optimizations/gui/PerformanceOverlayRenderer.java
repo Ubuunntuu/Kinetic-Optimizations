@@ -6,6 +6,7 @@ import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.performance.FrameTimeTracker;
 import com.kinetic.optimizations.performance.MemoryAndGcTracker;
 import com.kinetic.optimizations.performance.WorldRenderStats;
+import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 
 import java.util.Locale;
 
@@ -20,11 +21,11 @@ public final class PerformanceOverlayRenderer {
 
     private long lastHudRefreshNs = 0L;
     private final String[] cachedLines = new String[]{
-        "Kinetic Optimizations v0.2.0-alpha",
+        "Kinetic Optimizations v0.3.0-alpha",
         "FPS: -- | 1% Low: -- | Frame: -- ms",
         "Mem: --/-- MB | Alloc: -- MB/s | GC: --",
         "Chunks: -- | Entities: -- | Particles: --",
-        "Status: Optimal"
+        "GL Saved: --/s | Culled: --/s | Status: Optimal"
     };
 
     private PerformanceOverlayRenderer() {
@@ -49,6 +50,7 @@ public final class PerformanceOverlayRenderer {
 
     private void refreshCachedLines() {
         KineticDiagnosticsEngine engine = KineticDiagnosticsEngine.getInstance();
+        KineticRenderOptimizer renderOpt = KineticRenderOptimizer.getInstance();
         FrameTimeTracker frames = engine.getFrameTimeTracker();
         MemoryAndGcTracker mem = engine.getMemoryAndGcTracker();
         WorldRenderStats world = engine.getWorldRenderStats();
@@ -56,7 +58,7 @@ public final class PerformanceOverlayRenderer {
 
         cachedLines[0] = String.format(
             Locale.ROOT,
-            "Kinetic Optimizations [%s]",
+            "Kinetic Optimizations v0.3.0 [%s]",
             KineticConfig.activePreset.getDisplayName()
         );
         cachedLines[1] = String.format(
@@ -88,7 +90,9 @@ public final class PerformanceOverlayRenderer {
         );
         cachedLines[4] = String.format(
             Locale.ROOT,
-            "Bottleneck: %s",
+            "GL Saved: %d/s | Culled: %d/s | Bottleneck: %s",
+            renderOpt.getSavedGlCallsPerSecond(),
+            renderOpt.getCulledRenderObjectsPerSecond(),
             bottleneck.getLabel()
         );
     }
