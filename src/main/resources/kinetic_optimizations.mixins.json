@@ -4,7 +4,9 @@
   "package": "com.kinetic.optimizations.mixin",
   "compatibilityLevel": "JAVA_21",
   "plugin": "com.kinetic.optimizations.core.KineticMixinPlugin",
-  "client": [],
+  "client": [
+    "MinecraftDiagnosticsMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
