@@ -13,6 +13,7 @@
     "ParticleManagerMixin",
     "MathHelperFastTrigMixin",
     "BufferUploaderMixin",
+    "TextureAtlasAnimatedMixin",
     "InGameHudMixin"
   ],
   "injectors": {

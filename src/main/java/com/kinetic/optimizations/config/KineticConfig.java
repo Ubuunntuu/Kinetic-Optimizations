@@ -29,6 +29,7 @@ public final class KineticConfig {
     public static boolean fastFrustumCulling = true;
     public static boolean cullHiddenTileEntities = true;
     public static boolean skipInvisibleArmorStands = true;
+    public static boolean smartAnimatedTextures = true;
 
     // 3. Chunks
     public static boolean optimizeChunkRebuildQueue = true;
@@ -155,6 +156,7 @@ public final class KineticConfig {
         fastFrustumCulling = data.fastFrustumCulling;
         cullHiddenTileEntities = data.cullHiddenTileEntities;
         skipInvisibleArmorStands = data.skipInvisibleArmorStands;
+        smartAnimatedTextures = data.smartAnimatedTextures;
 
         optimizeChunkRebuildQueue = data.optimizeChunkRebuildQueue;
         deduplicateChunkUpdates = data.deduplicateChunkUpdates;
@@ -214,6 +216,7 @@ public final class KineticConfig {
         data.fastFrustumCulling = fastFrustumCulling;
         data.cullHiddenTileEntities = cullHiddenTileEntities;
         data.skipInvisibleArmorStands = skipInvisibleArmorStands;
+        data.smartAnimatedTextures = smartAnimatedTextures;
 
         data.optimizeChunkRebuildQueue = optimizeChunkRebuildQueue;
         data.deduplicateChunkUpdates = deduplicateChunkUpdates;
@@ -260,6 +263,7 @@ public final class KineticConfig {
                 fastFrustumCulling = true;
                 cullHiddenTileEntities = false;
                 skipInvisibleArmorStands = false;
+                smartAnimatedTextures = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 maxChunkUploadsPerFrame = 3;
@@ -289,6 +293,7 @@ public final class KineticConfig {
                 fastFrustumCulling = true;
                 cullHiddenTileEntities = true;
                 skipInvisibleArmorStands = true;
+                smartAnimatedTextures = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 maxChunkUploadsPerFrame = 4;
@@ -318,6 +323,7 @@ public final class KineticConfig {
                 fastFrustumCulling = true;
                 cullHiddenTileEntities = true;
                 skipInvisibleArmorStands = true;
+                smartAnimatedTextures = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 maxChunkUploadsPerFrame = 6;
@@ -347,6 +353,7 @@ public final class KineticConfig {
                 fastFrustumCulling = true;
                 cullHiddenTileEntities = true;
                 skipInvisibleArmorStands = true;
+                smartAnimatedTextures = true;
                 optimizeChunkRebuildQueue = true;
                 deduplicateChunkUpdates = true;
                 maxChunkUploadsPerFrame = 8;
@@ -376,6 +383,10 @@ public final class KineticConfig {
         }
     }
 
+    public static void markCustom() {
+        activePreset = PerformancePreset.CUSTOM;
+    }
+
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }
@@ -395,6 +406,7 @@ public final class KineticConfig {
         public boolean fastFrustumCulling = true;
         public boolean cullHiddenTileEntities = true;
         public boolean skipInvisibleArmorStands = true;
+        public boolean smartAnimatedTextures = true;
 
         public boolean optimizeChunkRebuildQueue = true;
         public boolean deduplicateChunkUpdates = true;

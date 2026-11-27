@@ -17,7 +17,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "1.1.0-beta1";
+    public static final String MOD_VERSION = "1.1.0";
 
     private static KineticOptimizations instance;
 
@@ -58,7 +58,7 @@ public final class KineticOptimizations implements ClientModInitializer {
         KineticCpuMemoryEngine.getInstance().onClientTick();
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
         KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
-        KineticLogger.info("Kinetic Optimizations v1.0.0 initialized. Hotkeys: [F8] HUD | [F9] Cycle Preset | [F10] 60s Benchmark.");
+        KineticLogger.info("Kinetic Optimizations v1.0.0 initialized. Hotkeys: [F7] Settings GUI | [F8] HUD | [F9] Cycle Preset | [F10] 60s Benchmark.");
     }
 
     public static KineticOptimizations getInstance() {

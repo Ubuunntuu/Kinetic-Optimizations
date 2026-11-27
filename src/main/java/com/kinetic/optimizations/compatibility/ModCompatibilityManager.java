@@ -109,7 +109,7 @@ public final class ModCompatibilityManager {
             return true;
         }
 
-        if (disableGlStateMixins && ("GlStateDeduplicationMixin".equals(simpleMixinName) || "BufferUploaderMixin".equals(simpleMixinName))) {
+        if (disableGlStateMixins && ("GlStateDeduplicationMixin".equals(simpleMixinName) || "BufferUploaderMixin".equals(simpleMixinName) || "TextureAtlasAnimatedMixin".equals(simpleMixinName))) {
             KineticLogger.warn("[Compatibility] Skipping %s due to external render/shader mod.", simpleMixinName);
             return false;
         }

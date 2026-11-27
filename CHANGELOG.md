@@ -2,12 +2,12 @@
 
 All notable changes to Kinetic Optimizations are documented in this file.
 
-## [1.1.0-beta1] - Phase 11: Deep Bytecode Culling Pack & Unfocused GPU Power Saver
+## [1.1.0] - Phase 12: Interactive F7 Settings GUI, Animated Sprite Throttler & Deep Bytecode Release
 ### Added
-- Upgraded EntityRenderDispatcherMixin to actively cancel rendering at HEAD for distant entities beyond maxEntityRenderDistanceSq and unnamed invisible marker ArmorStands while preserving all Players.
-- Added BlockEntityRenderDispatcherMixin to actively cull distant and off-frustum TileEntities (chests, signs, skulls, banners) while preserving global Beacons and active block-breaking animations.
-- Upgraded ChunkRebuildMixin to actively short-circuit redundant non-urgent RenderChunk.setDirty calls within the same tick via our 6.18 ns generation-stamped deduplicator.
-- Added UnfocusedFpsLimiter (limitUnfocusedFps = true, unfocusedFpsTarget = 15) to drop background GPU/CPU load to near-idle when Alt+Tabbed.
+- Implemented KineticConfigScreen (opened via F7): full 5-category clickable in-game GUI screen (General, Render/GPU, Chunks, Entities/Particles, CPU & HUD) with live persistence and Reset to Defaults.
+- Implemented AnimatedSpriteOptimizer and TextureAtlasAnimatedMixin to pause animated texture PCIe uploads while unfocused and pace background sprite ticks during frame-time spikes.
+- Active HEAD Mixin cancellation for EntityRenderDispatcher (distant entities & unnamed invisible ArmorStands), BlockEntityRenderDispatcher (distant/hidden chests, signs, skulls, banners), and duplicate RenderChunk.setDirty calls.
+- Added UnfocusedFpsLimiter (throttles background FPS to 15 FPS when Alt+Tabbed).
 
-## [1.0.0] - Phase 10: Final Data-Driven Tuning & Production Release (1.8.9 OneClient)
-- Generation-stamped 16,384-slot ChunkRebuildDeduplicator (25.8x faster), lock-free CursorRing, F8/F9/F10 in-game controls, and production documentation.
+## [1.0.0] - Phase 10: Initial Production Release (1.8.9 OneClient)
+- Generation-stamped 16,384-slot ChunkRebuildDeduplicator, 16KB L1D FastMath LUT, GlStateCache, FastFrustumCuller, BottleneckAnalyzer, and F8/F9/F10 hotkeys.

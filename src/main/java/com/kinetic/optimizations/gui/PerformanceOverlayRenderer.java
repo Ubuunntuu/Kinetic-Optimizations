@@ -17,7 +17,7 @@ public final class PerformanceOverlayRenderer {
 
     private long lastHudRefreshNs = 0L;
     private final String[] cachedLines = new String[]{
-        "Kinetic Optimizations v1.0.0",
+        "Kinetic Optimizations v1.1.0",
         "FPS: -- | 1% Low: -- | Frame: -- ms",
         "RAM: --/-- MB | Alloc: -- MB/s | GC: --",
         "Chunks: -- | Entities: -- | Particles: --",
@@ -55,7 +55,7 @@ public final class PerformanceOverlayRenderer {
 
         cachedLines[0] = String.format(
             Locale.ROOT,
-            "Kinetic v1.0.0 [%s]%s (F8:HUD F9:Preset F10:Bench)",
+            "Kinetic v1.1.0 [%s]%s (F7:Menu F8:HUD F9:Preset F10:Bench)",
             KineticConfig.activePreset.getDisplayName(),
             benchActive ? " [BENCHMARKING 60s]" : ""
         );

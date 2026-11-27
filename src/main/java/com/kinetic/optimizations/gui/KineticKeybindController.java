@@ -4,6 +4,7 @@ import com.kinetic.optimizations.config.KineticConfig;
 import com.kinetic.optimizations.config.PerformancePreset;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.utilities.KineticLogger;
+import net.minecraft.client.Minecraft;
 
 import java.lang.reflect.Method;
 
@@ -11,6 +12,7 @@ public final class KineticKeybindController {
 
     private static final KineticKeybindController INSTANCE = new KineticKeybindController();
 
+    private static final int LWJGL2_KEY_F7 = 65;
     private static final int LWJGL2_KEY_F8 = 66;
     private static final int LWJGL2_KEY_F9 = 67;
     private static final int LWJGL2_KEY_F10 = 68;
@@ -18,6 +20,7 @@ public final class KineticKeybindController {
     private Method lwjgl2IsKeyDown;
     private boolean reflectionResolved = false;
 
+    private boolean f7WasDown = false;
     private boolean f8WasDown = false;
     private boolean f9WasDown = false;
     private boolean f10WasDown = false;
@@ -30,17 +33,24 @@ public final class KineticKeybindController {
     }
 
     public void onClientTick() {
-        if (!KineticConfig.modEnabled) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.screen != null) {
             return;
         }
+
         resolveInputBridge();
         if (lwjgl2IsKeyDown == null) {
             return;
         }
 
+        boolean f7Down = isKeyDown(LWJGL2_KEY_F7);
         boolean f8Down = isKeyDown(LWJGL2_KEY_F8);
         boolean f9Down = isKeyDown(LWJGL2_KEY_F9);
         boolean f10Down = isKeyDown(LWJGL2_KEY_F10);
+
+        if (f7Down && !f7WasDown) {
+            mc.openScreen(new KineticConfigScreen(null));
+        }
 
         if (f8Down && !f8WasDown) {
             KineticConfig.showPerformanceOverlay = !KineticConfig.showPerformanceOverlay;
@@ -68,6 +78,7 @@ public final class KineticKeybindController {
             KineticLogger.info("[Keybind F10] Exported diagnostic snapshot & started 60s CSV benchmark.");
         }
 
+        f7WasDown = f7Down;
         f8WasDown = f8Down;
         f9WasDown = f9Down;
         f10WasDown = f10Down;
