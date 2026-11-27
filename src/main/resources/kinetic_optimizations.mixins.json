@@ -17,6 +17,7 @@
     "EntityRenderDispatcherMixin",
     "EntityNametagCullingMixin",
     "ItemAndXpClumpMixin",
+    "ExperienceOrbClumpMixin",
     "BlockEntityRenderDispatcherMixin",
     "ParticleManagerMixin",
     "MathHelperFastTrigMixin",
