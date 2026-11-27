@@ -1,10 +1,13 @@
 package com.kinetic.optimizations.diagnostics;
 
 import com.kinetic.optimizations.KineticOptimizations;
+import com.kinetic.optimizations.compatibility.ModCompatibilityManager;
 import com.kinetic.optimizations.config.KineticConfig;
+import com.kinetic.optimizations.core.KineticMixinPlugin;
 import com.kinetic.optimizations.performance.FrameTimeTracker;
 import com.kinetic.optimizations.performance.MemoryAndGcTracker;
 import com.kinetic.optimizations.performance.WorldRenderStats;
+import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 import com.kinetic.optimizations.utilities.KineticLogger;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -14,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -59,13 +63,19 @@ public final class DiagnosticReportGenerator {
             .resolve("kinetic_diagnostics_report.txt");
 
         BottleneckType bottleneck = analyzer.getActiveBottleneck();
-        StringBuilder sb = new StringBuilder(1024);
+        KineticRenderOptimizer renderOpt = KineticRenderOptimizer.getInstance();
+        List<String> compatAdvisories = ModCompatibilityManager.getInstance().getActiveWarnings();
+
+        StringBuilder sb = new StringBuilder(1536);
         sb.append("=== KINETIC OPTIMIZATIONS DIAGNOSTIC REPORT ===\n");
         sb.append("Timestamp: ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append('\n');
         sb.append("Mod Version: ").append(KineticOptimizations.MOD_VERSION).append('\n');
         sb.append("Java Runtime: ").append(Runtime.version()).append(" (").append(System.getProperty("java.vm.name")).append(")\n");
         sb.append("Active Preset: ").append(KineticConfig.activePreset.getDisplayName()).append('\n');
-        sb.append("Safe Mode: ").append(KineticConfig.safeMode).append("\n\n");
+        sb.append("Safe Mode: ").append(KineticMixinPlugin.isSafeModeActive()).append('\n');
+        sb.append("Compatibility Mode: ").append(KineticConfig.compatibilityMode).append('\n');
+        sb.append("Mixins (Applied / Skipped): ").append(KineticMixinPlugin.getAppliedMixinsCount())
+            .append(" / ").append(KineticMixinPlugin.getSkippedMixinsCount()).append("\n\n");
 
         sb.append("--- Frame Pacing & FPS ---\n");
         sb.append(String.format(Locale.ROOT, "Current FPS: %.1f\n", frames.getCurrentFps()));
@@ -84,12 +94,24 @@ public final class DiagnosticReportGenerator {
         sb.append(String.format(Locale.ROOT, "Process CPU Load: %.1f%%\n\n", memory.getProcessCpuLoadPercent()));
 
         sb.append("--- World & Rendering Subsystems ---\n");
+        sb.append(String.format(Locale.ROOT, "Saved OpenGL Calls/s: %d\n", renderOpt.getSavedGlCallsPerSecond()));
+        sb.append(String.format(Locale.ROOT, "Culled Objects/s: %d\n", renderOpt.getCulledRenderObjectsPerSecond()));
         sb.append(String.format(Locale.ROOT, "Entities (Rendered / Total / Culled): %d / %d / %d\n",
             world.getRenderedEntities(), world.getTotalEntities(), world.getCulledEntities()));
         sb.append(String.format(Locale.ROOT, "Visible Chunks: %d | Rebuilds/s: %d\n",
             world.getVisibleChunks(), world.getChunkRebuildsPerSecond()));
         sb.append(String.format(Locale.ROOT, "Particles (Active / Culled): %d / %d\n\n",
             world.getActiveParticles(), world.getCulledParticles()));
+
+        sb.append("--- Compatibility Advisories ---\n");
+        if (compatAdvisories.isEmpty()) {
+            sb.append("No conflicting rendering or coremod transformations detected.\n\n");
+        } else {
+            for (String note : compatAdvisories) {
+                sb.append("- ").append(note).append('\n');
+            }
+            sb.append('\n');
+        }
 
         sb.append("--- Automatic Bottleneck Analysis ---\n");
         sb.append("Detected Status: ").append(bottleneck.getLabel()).append('\n');

@@ -41,6 +41,34 @@ public abstract class GlStateDeduplicationMixin {
         }
     }
 
+    @Inject(method = "enableDepthTest", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateEnableDepthTest(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipDepthTestChange(true)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "disableDepthTest", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateDisableDepthTest(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipDepthTestChange(false)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "enableAlphaTest", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateEnableAlphaTest(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipAlphaTestChange(true)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "disableAlphaTest", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateDisableAlphaTest(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipAlphaTestChange(false)) {
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "enableCull", at = @At("HEAD"), cancellable = true)
     private static void kinetic$deduplicateEnableCull(CallbackInfo ci) {
         if (GlStateCache.shouldSkipCullChange(true)) {

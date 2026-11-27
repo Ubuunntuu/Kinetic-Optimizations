@@ -2,6 +2,7 @@ package com.kinetic.optimizations;
 
 import com.kinetic.optimizations.bootstrap.KineticPreLaunch;
 import com.kinetic.optimizations.chunks.KineticChunkEngine;
+import com.kinetic.optimizations.compatibility.ModCompatibilityManager;
 import com.kinetic.optimizations.config.KineticConfig;
 import com.kinetic.optimizations.core.KineticMixinPlugin;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
@@ -16,7 +17,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "0.7.0-alpha";
+    public static final String MOD_VERSION = "0.8.0-beta";
 
     private static KineticOptimizations instance;
 
@@ -24,6 +25,7 @@ public final class KineticOptimizations implements ClientModInitializer {
     public void onInitializeClient() {
         instance = this;
         KineticPreLaunch.ensureInitialized();
+        ModCompatibilityManager.getInstance().scanEnvironment();
 
         if (!KineticConfig.modEnabled) {
             KineticLogger.warn("%s is disabled in configuration.", MOD_NAME);
@@ -42,11 +44,12 @@ public final class KineticOptimizations implements ClientModInitializer {
             maxMemoryMb,
             FabricLoader.getInstance().getAllMods().size()
         );
-        KineticLogger.info("Active Preset: %s | Safe Mode: %s | Compatibility Mode: %s | Applied Mixins: %d",
+        KineticLogger.info("Active Preset: %s | Safe Mode: %s | Compat Mode: %s | Mixins Applied: %d (Skipped: %d)",
             KineticConfig.activePreset.getDisplayName(),
             KineticMixinPlugin.isSafeModeActive(),
             KineticConfig.compatibilityMode,
-            KineticMixinPlugin.getAppliedMixinsCount()
+            KineticMixinPlugin.getAppliedMixinsCount(),
+            KineticMixinPlugin.getSkippedMixinsCount()
         );
 
         KineticRenderOptimizer.getInstance().onFrameStart();
@@ -55,7 +58,7 @@ public final class KineticOptimizations implements ClientModInitializer {
         KineticCpuMemoryEngine.getInstance().onClientTick();
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
         KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
-        KineticLogger.info("Phase 7 Advanced Rendering & Resource Engine (Tri-State GL Capabilities, Empty Buffer Upload Filter, Resource Cache Manager) active.");
+        KineticLogger.info("Phase 8 Compatibility Engine & Live In-Game Performance HUD active.");
     }
 
     public static KineticOptimizations getInstance() {

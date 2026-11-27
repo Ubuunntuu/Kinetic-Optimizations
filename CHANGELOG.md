@@ -2,20 +2,25 @@
 
 All notable changes to Kinetic Optimizations are documented in this file.
 
+## [0.8.0-beta] - Phase 8: Compatibility Engine, Safe Mode & Live In-Game HUD
+### Added
+- Implemented `ModCompatibilityManager` and `CompatibilityRule` to scan loaded mods and early classloader agents (`OptiFine`, `Sodium`, `Celeritas`, `VeloxCaelo`, `Iris`, `BetterFPS`, `Patcher`, `FoamFix`, `VanillaFix`, `OneConfig`) and surgically bypass only conflicting mixins.
+- Upgraded `KineticMixinPlugin` (`IMixinConfigPlugin`) with per-mixin compatibility gating and applied/skipped mixin telemetry.
+- Added `enableDepthTest`/`disableDepthTest` and `enableAlphaTest`/`disableAlphaTest` tri-state deduplication hooks in `GlStateDeduplicationMixin`.
+- Implemented `InGameHudMixin` to render the real-time 5-line Kinetic telemetry HUD directly onto the in-game screen when `showPerformanceOverlay` is enabled.
+- Upgraded `DiagnosticReportGenerator` to include compatibility advisories and mixin audit counts.
+
 ## [0.7.0-alpha] - Phase 7: Advanced Rendering & Resource Engine
 ### Added
-- Expanded `GlStateCache` and `GlStateDeduplicationMixin` with tri-state OpenGL capability deduplication (`enableBlend`/`disableBlend`, `enableCull`/`disableCull`) with per-frame safety resynchronization.
-- Implemented `BufferUploadOptimizer` and `BufferUploaderMixin` to track vertex buffer uploads and short-circuit empty (0-vertex) buffer draw calls.
-- Implemented `ResourceCacheOptimizer` hooked into `Minecraft::reloadResources` to flush OpenGL shadow state and thread-local buffer pools on resource-pack reloads.
+- Expanded `GlStateCache`, `BufferUploadOptimizer`, `BufferUploaderMixin`, and `ResourceCacheOptimizer`.
 
 ## [0.6.0-alpha] - Phase 6: CPU and Memory Engine
 ### Added
-- Implemented `FastMathEngine` and `MathHelperFastTrigMixin` providing a 16 KB L1-cache-resident trigonometric lookup table (`sin`/`cos`), branchless `fastFloor`, and `fastInvSqrt`.
-- Implemented `AllocationReducer`, `MemoryPoolManager`, `PacketBurstOptimizer`, and `KineticCpuMemoryEngine`.
+- Implemented `FastMathEngine`, `MathHelperFastTrigMixin`, `AllocationReducer`, `MemoryPoolManager`, and `PacketBurstOptimizer`.
 
 ## [0.5.0-alpha] - Phase 5: Entity and Particle Engine
 ### Added
-- Implemented `EntityVisibilityOptimizer`, `BlockEntityCullingOptimizer`, `ParticleEngineOptimizer`, `KineticEntityParticleEngine`, `EntityRenderDispatcherMixin`, and `ParticleManagerMixin`.
+- Implemented `EntityVisibilityOptimizer`, `BlockEntityCullingOptimizer`, `ParticleEngineOptimizer`, `EntityRenderDispatcherMixin`, and `ParticleManagerMixin`.
 
 ## [0.4.0-alpha] - Phase 4: Chunk Engine
 ### Added
