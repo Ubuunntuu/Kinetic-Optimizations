@@ -2,13 +2,16 @@
 
 All notable changes to Kinetic Optimizations are documented in this file.
 
+## [0.7.0-alpha] - Phase 7: Advanced Rendering & Resource Engine
+### Added
+- Expanded `GlStateCache` and `GlStateDeduplicationMixin` with tri-state OpenGL capability deduplication (`enableBlend`/`disableBlend`, `enableCull`/`disableCull`) with per-frame safety resynchronization.
+- Implemented `BufferUploadOptimizer` and `BufferUploaderMixin` to track vertex buffer uploads and short-circuit empty (0-vertex) buffer draw calls.
+- Implemented `ResourceCacheOptimizer` hooked into `Minecraft::reloadResources` to flush OpenGL shadow state and thread-local buffer pools on resource-pack reloads.
+
 ## [0.6.0-alpha] - Phase 6: CPU and Memory Engine
 ### Added
 - Implemented `FastMathEngine` and `MathHelperFastTrigMixin` providing a 16 KB L1-cache-resident trigonometric lookup table (`sin`/`cos`), branchless `fastFloor`, and `fastInvSqrt`.
-- Implemented `AllocationReducer` with pre-computed 6-direction normal offset tables and a 32-slot thread-local `MutablePosCursor` ring to eliminate temporary `BlockPos` and `Direction.values()` array allocations.
-- Implemented `MemoryPoolManager` to automatically trim thread-local pools under high heap occupancy (>85%) without calling `System.gc()`.
-- Implemented `PacketBurstOptimizer` and `KineticCpuMemoryEngine`.
-- Upgraded `EntityRenderDispatcherMixin` to hook `setCameraPos` and `shouldRender`.
+- Implemented `AllocationReducer`, `MemoryPoolManager`, `PacketBurstOptimizer`, and `KineticCpuMemoryEngine`.
 
 ## [0.5.0-alpha] - Phase 5: Entity and Particle Engine
 ### Added

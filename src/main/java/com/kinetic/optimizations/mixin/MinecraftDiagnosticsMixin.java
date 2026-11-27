@@ -5,6 +5,7 @@ import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.entities.KineticEntityParticleEngine;
 import com.kinetic.optimizations.memory.KineticCpuMemoryEngine;
 import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
+import com.kinetic.optimizations.resources.ResourceCacheOptimizer;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,5 +31,10 @@ public abstract class MinecraftDiagnosticsMixin {
     private void kinetic$onClientTickStart(CallbackInfo ci) {
         KineticChunkEngine.getInstance().onClientTick();
         KineticCpuMemoryEngine.getInstance().onClientTick();
+    }
+
+    @Inject(method = "reloadResources", at = @At("HEAD"))
+    private void kinetic$onResourceReload(CallbackInfo ci) {
+        ResourceCacheOptimizer.getInstance().onResourceReload();
     }
 }

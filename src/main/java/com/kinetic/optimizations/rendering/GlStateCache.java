@@ -6,19 +6,24 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * High-speed shadow cache for OpenGL state and texture unit bindings.
- * Eliminates redundant JNI/driver state transitions on hot rendering paths.
+ * High-speed shadow cache for OpenGL capability states and texture unit bindings.
+ * Uses tri-state tracking (-1 = unknown, 0 = disabled, 1 = enabled) with frame-boundary
+ * resynchronization so raw GL calls from other mods can never permanently desync state.
  */
 public final class GlStateCache {
+
+    private static final int STATE_UNKNOWN = -1;
+    private static final int STATE_DISABLED = 0;
+    private static final int STATE_ENABLED = 1;
 
     private static final int MAX_TEXTURE_UNITS = 8;
     private static final int[] BOUND_TEXTURES = new int[MAX_TEXTURE_UNITS];
     private static int activeTextureUnit = 0;
 
-    private static boolean blendEnabled = false;
-    private static boolean depthTestEnabled = false;
-    private static boolean cullFaceEnabled = false;
-    private static boolean alphaTestEnabled = false;
+    private static int blendState = STATE_UNKNOWN;
+    private static int depthTestState = STATE_UNKNOWN;
+    private static int cullState = STATE_UNKNOWN;
+    private static int alphaTestState = STATE_UNKNOWN;
 
     private static final AtomicInteger SAVED_CALLS_ACCUMULATOR = new AtomicInteger(0);
     private static volatile int savedCallsPerSecond = 0;
@@ -32,6 +37,12 @@ public final class GlStateCache {
     }
 
     public static void onFrameStart() {
+        // Reset capability tri-states once per frame to prevent external raw GL desync
+        blendState = STATE_UNKNOWN;
+        depthTestState = STATE_UNKNOWN;
+        cullState = STATE_UNKNOWN;
+        alphaTestState = STATE_UNKNOWN;
+
         long now = System.nanoTime();
         if (now - lastRolloverNs >= 1_000_000_000L) {
             savedCallsPerSecond = SAVED_CALLS_ACCUMULATOR.getAndSet(0);
@@ -39,24 +50,72 @@ public final class GlStateCache {
         }
     }
 
-    /**
-     * Returns true if the texture bind is redundant and can be safely skipped.
-     */
     public static boolean shouldSkipBindTexture(int textureId) {
-        if (!KineticConfig.modEnabled || !KineticConfig.deduplicateTextureBinds) {
+        if (!KineticConfig.modEnabled || !KineticConfig.deduplicateTextureBinds || textureId <= 0) {
             BOUND_TEXTURES[activeTextureUnit] = textureId;
             return false;
         }
-        if (textureId <= 0) {
-            BOUND_TEXTURES[activeTextureUnit] = textureId;
-            return false;
-        }
-        int current = BOUND_TEXTURES[activeTextureUnit];
-        if (current == textureId) {
+        if (BOUND_TEXTURES[activeTextureUnit] == textureId) {
             SAVED_CALLS_ACCUMULATOR.incrementAndGet();
             return true;
         }
         BOUND_TEXTURES[activeTextureUnit] = textureId;
+        return false;
+    }
+
+    public static boolean shouldSkipBlendChange(boolean enable) {
+        if (!KineticConfig.modEnabled || !KineticConfig.optimizeStateChanges) {
+            blendState = enable ? STATE_ENABLED : STATE_DISABLED;
+            return false;
+        }
+        int target = enable ? STATE_ENABLED : STATE_DISABLED;
+        if (blendState == target) {
+            SAVED_CALLS_ACCUMULATOR.incrementAndGet();
+            return true;
+        }
+        blendState = target;
+        return false;
+    }
+
+    public static boolean shouldSkipDepthTestChange(boolean enable) {
+        if (!KineticConfig.modEnabled || !KineticConfig.optimizeStateChanges) {
+            depthTestState = enable ? STATE_ENABLED : STATE_DISABLED;
+            return false;
+        }
+        int target = enable ? STATE_ENABLED : STATE_DISABLED;
+        if (depthTestState == target) {
+            SAVED_CALLS_ACCUMULATOR.incrementAndGet();
+            return true;
+        }
+        depthTestState = target;
+        return false;
+    }
+
+    public static boolean shouldSkipCullChange(boolean enable) {
+        if (!KineticConfig.modEnabled || !KineticConfig.optimizeStateChanges) {
+            cullState = enable ? STATE_ENABLED : STATE_DISABLED;
+            return false;
+        }
+        int target = enable ? STATE_ENABLED : STATE_DISABLED;
+        if (cullState == target) {
+            SAVED_CALLS_ACCUMULATOR.incrementAndGet();
+            return true;
+        }
+        cullState = target;
+        return false;
+    }
+
+    public static boolean shouldSkipAlphaTestChange(boolean enable) {
+        if (!KineticConfig.modEnabled || !KineticConfig.optimizeStateChanges) {
+            alphaTestState = enable ? STATE_ENABLED : STATE_DISABLED;
+            return false;
+        }
+        int target = enable ? STATE_ENABLED : STATE_DISABLED;
+        if (alphaTestState == target) {
+            SAVED_CALLS_ACCUMULATOR.incrementAndGet();
+            return true;
+        }
+        alphaTestState = target;
         return false;
     }
 
@@ -79,45 +138,13 @@ public final class GlStateCache {
 
     public static void invalidateAll() {
         Arrays.fill(BOUND_TEXTURES, -1);
-    }
-
-    public static void recordSavedStateCall() {
-        SAVED_CALLS_ACCUMULATOR.incrementAndGet();
+        blendState = STATE_UNKNOWN;
+        depthTestState = STATE_UNKNOWN;
+        cullState = STATE_UNKNOWN;
+        alphaTestState = STATE_UNKNOWN;
     }
 
     public static int getSavedCallsPerSecond() {
         return savedCallsPerSecond;
-    }
-
-    public static boolean isBlendEnabled() {
-        return blendEnabled;
-    }
-
-    public static void setBlendEnabled(boolean enabled) {
-        blendEnabled = enabled;
-    }
-
-    public static boolean isDepthTestEnabled() {
-        return depthTestEnabled;
-    }
-
-    public static void setDepthTestEnabled(boolean enabled) {
-        depthTestEnabled = enabled;
-    }
-
-    public static boolean isCullFaceEnabled() {
-        return cullFaceEnabled;
-    }
-
-    public static void setCullFaceEnabled(boolean enabled) {
-        cullFaceEnabled = enabled;
-    }
-
-    public static boolean isAlphaTestEnabled() {
-        return alphaTestEnabled;
-    }
-
-    public static void setAlphaTestEnabled(boolean enabled) {
-        alphaTestEnabled = enabled;
     }
 }

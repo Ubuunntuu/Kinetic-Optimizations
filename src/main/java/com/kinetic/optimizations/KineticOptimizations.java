@@ -16,7 +16,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "0.6.0-alpha";
+    public static final String MOD_VERSION = "0.7.0-alpha";
 
     private static KineticOptimizations instance;
 
@@ -55,7 +55,7 @@ public final class KineticOptimizations implements ClientModInitializer {
         KineticCpuMemoryEngine.getInstance().onClientTick();
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
         KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
-        KineticLogger.info("Phase 6 CPU & Memory Engine (16KB L1-Resident FastMath LUT, Thread-Local Coordinate Cursors, Packet Burst Optimizer) active.");
+        KineticLogger.info("Phase 7 Advanced Rendering & Resource Engine (Tri-State GL Capabilities, Empty Buffer Upload Filter, Resource Cache Manager) active.");
     }
 
     public static KineticOptimizations getInstance() {

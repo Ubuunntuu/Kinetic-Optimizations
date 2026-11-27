@@ -26,4 +26,32 @@ public abstract class GlStateDeduplicationMixin {
     private static void kinetic$invalidateDeletedTexture(int textureId, CallbackInfo ci) {
         GlStateCache.invalidateTexture(textureId);
     }
+
+    @Inject(method = "enableBlend", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateEnableBlend(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipBlendChange(true)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "disableBlend", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateDisableBlend(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipBlendChange(false)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "enableCull", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateEnableCull(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipCullChange(true)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "disableCull", at = @At("HEAD"), cancellable = true)
+    private static void kinetic$deduplicateDisableCull(CallbackInfo ci) {
+        if (GlStateCache.shouldSkipCullChange(false)) {
+            ci.cancel();
+        }
+    }
 }

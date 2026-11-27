@@ -10,7 +10,8 @@
     "ChunkRebuildMixin",
     "EntityRenderDispatcherMixin",
     "ParticleManagerMixin",
-    "MathHelperFastTrigMixin"
+    "MathHelperFastTrigMixin",
+    "BufferUploaderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
