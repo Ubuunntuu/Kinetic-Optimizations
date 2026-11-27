@@ -17,7 +17,7 @@ public final class KineticOptimizations implements ClientModInitializer {
 
     public static final String MOD_ID = "kinetic_optimizations";
     public static final String MOD_NAME = "Kinetic Optimizations";
-    public static final String MOD_VERSION = "0.9.0-rc1";
+    public static final String MOD_VERSION = "1.0.0";
 
     private static KineticOptimizations instance;
 
@@ -36,7 +36,7 @@ public final class KineticOptimizations implements ClientModInitializer {
         long maxMemoryMb = runtime.maxMemory() / (1024L * 1024L);
         int processors = runtime.availableProcessors();
 
-        KineticLogger.info("Initializing %s v%s [OneClient / Ornithe 1.8.9]", MOD_NAME, MOD_VERSION);
+        KineticLogger.info("Initializing %s v%s [OneClient / Ornithe 1.8.9 Release]", MOD_NAME, MOD_VERSION);
         KineticLogger.info("Runtime: Java %s (%s) | Logical CPUs: %d | Max Heap: %d MB | Loaded Mods: %d",
             Runtime.version(),
             System.getProperty("java.vm.name"),
@@ -58,7 +58,7 @@ public final class KineticOptimizations implements ClientModInitializer {
         KineticCpuMemoryEngine.getInstance().onClientTick();
         KineticDiagnosticsEngine.getInstance().onFrameCompleted();
         KineticDiagnosticsEngine.getInstance().exportSnapshotToDisk();
-        KineticLogger.info("Phase 8 Compatibility Engine & Live In-Game Performance HUD active.");
+        KineticLogger.info("Kinetic Optimizations v1.0.0 initialized. Hotkeys: [F8] HUD | [F9] Cycle Preset | [F10] 60s Benchmark.");
     }
 
     public static KineticOptimizations getInstance() {

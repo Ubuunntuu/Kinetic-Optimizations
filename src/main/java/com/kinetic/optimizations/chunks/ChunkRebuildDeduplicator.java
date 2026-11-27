@@ -5,44 +5,28 @@ import com.kinetic.optimizations.config.KineticConfig;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Zero-allocation primitive 64-bit open-addressed hash table that deduplicates
- * redundant chunk section rebuild requests within the same frame/tick window.
- */
 public final class ChunkRebuildDeduplicator {
 
-    private static final int TABLE_SIZE = 2048; // Power of two
+    private static final int TABLE_SIZE = 16384;
     private static final int TABLE_MASK = TABLE_SIZE - 1;
-    private static final long EMPTY_KEY = Long.MIN_VALUE;
 
-    private final long[] activeSectionKeys = new long[TABLE_SIZE];
-    private int occupiedCount = 0;
+    private final long[] sectionKeys = new long[TABLE_SIZE];
+    private final int[] slotGenerations = new int[TABLE_SIZE];
+    private int currentGeneration = 1;
+    private int occupiedInGeneration = 0;
 
     private final AtomicInteger deduplicatedAccumulator = new AtomicInteger(0);
     private volatile int deduplicatedPerSecond = 0;
     private long lastRolloverNs = System.nanoTime();
 
-    public ChunkRebuildDeduplicator() {
-        Arrays.fill(activeSectionKeys, EMPTY_KEY);
-    }
-
-    /**
-     * Packs 3D sub-chunk section coordinates into a single 64-bit primitive key without object allocation.
-     */
     public static long packSectionKey(int sectionX, int sectionY, int sectionZ) {
         return ((long) (sectionX & 0x3FFFFF) << 42)
              | ((long) (sectionY & 0xFFFFF) << 22)
              | ((long) (sectionZ & 0x3FFFFF));
     }
 
-    /**
-     * Clears the per-tick deduplication table and updates per-second telemetry.
-     */
-    public synchronized void onTickRollover() {
-        if (occupiedCount > 0) {
-            Arrays.fill(activeSectionKeys, EMPTY_KEY);
-            occupiedCount = 0;
-        }
+    public void onTickRollover() {
+        advanceGeneration();
         long now = System.nanoTime();
         if (now - lastRolloverNs >= 1_000_000_000L) {
             deduplicatedPerSecond = deduplicatedAccumulator.getAndSet(0);
@@ -50,35 +34,38 @@ public final class ChunkRebuildDeduplicator {
         }
     }
 
-    /**
-     * Returns true if this chunk section should be scheduled for rebuild, or false if it
-     * was already queued during the current tick window.
-     */
-    public synchronized boolean shouldScheduleRebuild(int sectionX, int sectionY, int sectionZ) {
+    private void advanceGeneration() {
+        currentGeneration++;
+        if (currentGeneration == Integer.MAX_VALUE) {
+            Arrays.fill(slotGenerations, 0);
+            currentGeneration = 1;
+        }
+        occupiedInGeneration = 0;
+    }
+
+    public boolean shouldScheduleRebuild(int sectionX, int sectionY, int sectionZ) {
         if (!KineticConfig.modEnabled || !KineticConfig.deduplicateChunkUpdates) {
             return true;
         }
 
-        if (occupiedCount >= (TABLE_SIZE >> 1)) {
-            Arrays.fill(activeSectionKeys, EMPTY_KEY);
-            occupiedCount = 0;
+        if (occupiedInGeneration >= (TABLE_SIZE >> 1)) {
+            advanceGeneration();
         }
 
         long key = packSectionKey(sectionX, sectionY, sectionZ);
-        if (key == EMPTY_KEY) {
-            key = Long.MAX_VALUE;
-        }
+        int gen = this.currentGeneration;
+        int hash = (int) ((key ^ (key >>> 32)) * 0x9E3779B97F4A7C15L >>> 48);
+        int slot = hash & TABLE_MASK;
 
-        int slot = ((int) (key ^ (key >>> 32))) & TABLE_MASK;
         while (true) {
-            long existing = activeSectionKeys[slot];
-            if (existing == EMPTY_KEY) {
-                activeSectionKeys[slot] = key;
-                occupiedCount++;
+            if (slotGenerations[slot] != gen) {
+                slotGenerations[slot] = gen;
+                sectionKeys[slot] = key;
+                occupiedInGeneration++;
                 return true;
             }
-            if (existing == key) {
-                deduplicatedAccumulator.incrementAndGet();
+            if (sectionKeys[slot] == key) {
+                deduplicatedAccumulator.lazySet(deduplicatedAccumulator.get() + 1);
                 return false;
             }
             slot = (slot + 1) & TABLE_MASK;

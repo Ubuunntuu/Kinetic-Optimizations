@@ -3,6 +3,7 @@ package com.kinetic.optimizations.mixin;
 import com.kinetic.optimizations.chunks.KineticChunkEngine;
 import com.kinetic.optimizations.diagnostics.KineticDiagnosticsEngine;
 import com.kinetic.optimizations.entities.KineticEntityParticleEngine;
+import com.kinetic.optimizations.gui.KineticKeybindController;
 import com.kinetic.optimizations.memory.KineticCpuMemoryEngine;
 import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 import com.kinetic.optimizations.resources.ResourceCacheOptimizer;
@@ -31,6 +32,7 @@ public abstract class MinecraftDiagnosticsMixin {
     private void kinetic$onClientTickStart(CallbackInfo ci) {
         KineticChunkEngine.getInstance().onClientTick();
         KineticCpuMemoryEngine.getInstance().onClientTick();
+        KineticKeybindController.getInstance().onClientTick();
     }
 
     @Inject(method = "reloadResources", at = @At("HEAD"))

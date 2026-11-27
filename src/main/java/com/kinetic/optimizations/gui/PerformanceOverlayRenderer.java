@@ -10,20 +10,16 @@ import com.kinetic.optimizations.rendering.KineticRenderOptimizer;
 
 import java.util.Locale;
 
-/**
- * Builds low-overhead HUD overlay strings for in-game rendering without per-frame heap churn
- * when the overlay is disabled, and updates at 4 Hz when enabled.
- */
 public final class PerformanceOverlayRenderer {
 
     private static final PerformanceOverlayRenderer INSTANCE = new PerformanceOverlayRenderer();
-    private static final long HUD_REFRESH_INTERVAL_NS = 250_000_000L; // 250 ms (4 Hz)
+    private static final long HUD_REFRESH_INTERVAL_NS = 250_000_000L;
 
     private long lastHudRefreshNs = 0L;
     private final String[] cachedLines = new String[]{
-        "Kinetic Optimizations v0.3.0-alpha",
+        "Kinetic Optimizations v1.0.0",
         "FPS: -- | 1% Low: -- | Frame: -- ms",
-        "Mem: --/-- MB | Alloc: -- MB/s | GC: --",
+        "RAM: --/-- MB | Alloc: -- MB/s | GC: --",
         "Chunks: -- | Entities: -- | Particles: --",
         "GL Saved: --/s | Culled: --/s | Status: Optimal"
     };
@@ -55,19 +51,22 @@ public final class PerformanceOverlayRenderer {
         MemoryAndGcTracker mem = engine.getMemoryAndGcTracker();
         WorldRenderStats world = engine.getWorldRenderStats();
         BottleneckType bottleneck = engine.getBottleneckAnalyzer().getActiveBottleneck();
+        boolean benchActive = engine.getBenchmarkSession().isActive();
 
         cachedLines[0] = String.format(
             Locale.ROOT,
-            "Kinetic Optimizations v0.3.0 [%s]",
-            KineticConfig.activePreset.getDisplayName()
+            "Kinetic v1.0.0 [%s]%s (F8:HUD F9:Preset F10:Bench)",
+            KineticConfig.activePreset.getDisplayName(),
+            benchActive ? " [BENCHMARKING 60s]" : ""
         );
         cachedLines[1] = String.format(
             Locale.ROOT,
-            "FPS: %.0f (Avg: %.0f | 1%% Low: %.0f) | %.2f ms",
+            "FPS: %.0f (Avg: %.0f | 1%% Low: %.0f) | %.2f ms (Jitter: %.2f ms)",
             frames.getCurrentFps(),
             frames.getAverageFps(),
             frames.getOnePercentLowFps(),
-            frames.getLastFrameTimeMs()
+            frames.getLastFrameTimeMs(),
+            frames.getFrameTimeStdDevMs()
         );
         cachedLines[2] = String.format(
             Locale.ROOT,
@@ -90,7 +89,7 @@ public final class PerformanceOverlayRenderer {
         );
         cachedLines[4] = String.format(
             Locale.ROOT,
-            "GL Saved: %d/s | Culled: %d/s | Bottleneck: %s",
+            "GL Saved: %d/s | Culled: %d/s | Status: %s",
             renderOpt.getSavedGlCallsPerSecond(),
             renderOpt.getCulledRenderObjectsPerSecond(),
             bottleneck.getLabel()

@@ -30,15 +30,24 @@ class KineticBenchmarkAndVerificationTest {
             if (cosErr > maxCosError) maxCosError = cosErr;
         }
 
-        // 4096-entry LUT step error bound is <= ~0.0016 radians
         Assertions.assertTrue(maxSinError < 0.002f, "Sin LUT error too high: " + maxSinError);
         Assertions.assertTrue(maxCosError < 0.002f, "Cos LUT error too high: " + maxCosError);
 
-        // Verify negative boundary fastFloor matches Math.floor
         Assertions.assertEquals(-1, FastMathEngine.fastFloor(-0.001d));
         Assertions.assertEquals(-2, FastMathEngine.fastFloor(-1.999d));
         Assertions.assertEquals(0, FastMathEngine.fastFloor(0.0d));
         Assertions.assertEquals(42, FastMathEngine.fastFloor(42.999d));
+    }
+
+    @Test
+    void verifyPackedBlockPosSignPreservation() {
+        long packed = AllocationReducer.packBlockPos(-123456, 128, -654321);
+        Assertions.assertEquals(-123456, AllocationReducer.unpackX(packed));
+        Assertions.assertEquals(128, AllocationReducer.unpackY(packed));
+        Assertions.assertEquals(-654321, AllocationReducer.unpackZ(packed));
+
+        long movedEast = AllocationReducer.offsetPacked(packed, 5);
+        Assertions.assertEquals(-123455, AllocationReducer.unpackX(movedEast));
     }
 
     @Test
@@ -48,11 +57,11 @@ class KineticBenchmarkAndVerificationTest {
         KineticConfig.deduplicateChunkUpdates = true;
 
         Assertions.assertTrue(dedup.shouldScheduleRebuild(-15, 4, 32));
-        Assertions.assertFalse(dedup.shouldScheduleRebuild(-15, 4, 32), "Duplicate section rebuild in same tick must be rejected");
-        Assertions.assertTrue(dedup.shouldScheduleRebuild(-15, 5, 32), "Adjacent Y section must be accepted");
+        Assertions.assertFalse(dedup.shouldScheduleRebuild(-15, 4, 32));
+        Assertions.assertTrue(dedup.shouldScheduleRebuild(-15, 5, 32));
 
         dedup.onTickRollover();
-        Assertions.assertTrue(dedup.shouldScheduleRebuild(-15, 4, 32), "After tick rollover, section must be accepted again");
+        Assertions.assertTrue(dedup.shouldScheduleRebuild(-15, 4, 32));
     }
 
     @Test
@@ -78,10 +87,8 @@ class KineticBenchmarkAndVerificationTest {
         for (PerformancePreset preset : PerformancePreset.values()) {
             if (preset != PerformancePreset.CUSTOM) {
                 KineticConfig.applyPreset(preset);
-                Assertions.assertFalse(KineticConfig.enableExperimentalOptimizations,
-                    "Preset " + preset + " must never enable experimental features automatically");
-                Assertions.assertFalse(KineticConfig.aggressiveOcclusionCulling,
-                    "Preset " + preset + " must never enable experimental occlusion culling");
+                Assertions.assertFalse(KineticConfig.enableExperimentalOptimizations);
+                Assertions.assertFalse(KineticConfig.aggressiveOcclusionCulling);
             }
         }
     }
@@ -95,25 +102,23 @@ class KineticBenchmarkAndVerificationTest {
 
         Assertions.assertTrue(culler.isWithinRenderDistanceSq(10.0, 64.0, 10.0, 4096.0));
         Assertions.assertFalse(culler.isWithinRenderDistanceSq(100.0, 64.0, 0.0, 4096.0));
-
         Assertions.assertTrue(culler.shouldSkipInvisibleArmorStand(true, false, false));
-        Assertions.assertFalse(culler.shouldSkipInvisibleArmorStand(true, true, false), "Named hologram armor stands must NOT be skipped");
-        Assertions.assertFalse(culler.shouldSkipInvisibleArmorStand(true, false, true), "Equipped armor stands must NOT be skipped");
+        Assertions.assertFalse(culler.shouldSkipInvisibleArmorStand(true, true, false));
+        Assertions.assertFalse(culler.shouldSkipInvisibleArmorStand(true, false, true));
     }
 
     @Test
-    void runHardwareCpuAndMemoryMicrobenchmarks() throws Exception {
+    void runTunedReleaseMicrobenchmarks() throws Exception {
         final int iterations = 10_000_000;
 
-        // Warmup JIT
         float warmupSink = 0.0f;
+        AllocationReducer.CursorRing warmRing = AllocationReducer.acquireRing();
         for (int i = 0; i < 500_000; i++) {
             warmupSink += (float) Math.sin(i * 0.01f) + FastMathEngine.sin(i * 0.01f);
-            AllocationReducer.MutablePosCursor c = AllocationReducer.acquireCursor(i, 64, -i);
-            warmupSink += c.x;
+            warmupSink += warmRing.next(i, 64, -i).move(i % 6).x;
+            warmupSink += AllocationReducer.unpackX(AllocationReducer.packBlockPos(i, 64, -i));
         }
 
-        // 1. Standard Math.sin/cos vs Kinetic 16KB L1 LUT
         long t0 = System.nanoTime();
         float stdSum = 0.0f;
         for (int i = 0; i < iterations; i++) {
@@ -130,7 +135,6 @@ class KineticBenchmarkAndVerificationTest {
         }
         long fastMathNs = System.nanoTime() - t1;
 
-        // 2. Heap int[3] allocation vs Thread-Local MutablePosCursor Ring
         long t2 = System.nanoTime();
         long heapCoordSum = 0L;
         for (int i = 0; i < iterations; i++) {
@@ -142,13 +146,21 @@ class KineticBenchmarkAndVerificationTest {
 
         long t3 = System.nanoTime();
         long cursorCoordSum = 0L;
+        AllocationReducer.CursorRing ring = AllocationReducer.acquireRing();
         for (int i = 0; i < iterations; i++) {
-            AllocationReducer.MutablePosCursor c = AllocationReducer.acquireCursor(i, 64, -i).move(i % 6);
+            AllocationReducer.MutablePosCursor c = ring.next(i, 64, -i).move(i % 6);
             cursorCoordSum += c.x + c.y + c.z;
         }
         long cursorRingNs = System.nanoTime() - t3;
 
-        // 3. 64-bit Chunk Section Rebuild Deduplicator throughput (5M lookups)
+        long tPacked = System.nanoTime();
+        long packedCoordSum = 0L;
+        for (int i = 0; i < iterations; i++) {
+            long p = AllocationReducer.offsetPacked(AllocationReducer.packBlockPos(i, 64, -i), i % 6);
+            packedCoordSum += AllocationReducer.unpackX(p) + AllocationReducer.unpackY(p) + AllocationReducer.unpackZ(p);
+        }
+        long packedNs = System.nanoTime() - tPacked;
+
         ChunkRebuildDeduplicator dedup = new ChunkRebuildDeduplicator();
         KineticConfig.modEnabled = true;
         KineticConfig.deduplicateChunkUpdates = true;
@@ -156,30 +168,32 @@ class KineticBenchmarkAndVerificationTest {
         long t4 = System.nanoTime();
         int scheduled = 0;
         for (int i = 0; i < chunkLookups; i++) {
-            if (dedup.shouldScheduleRebuild(i & 31, (i >> 5) & 7, (i >> 8) & 31)) {
+            if (dedup.shouldScheduleRebuild(i & 15, (i >> 4) & 15, (i >> 8) & 15)) {
                 scheduled++;
             }
         }
         long dedupNs = System.nanoTime() - t4;
 
         Assertions.assertEquals(heapCoordSum, cursorCoordSum);
-        Assertions.assertTrue(scheduled > 0 && warmupSink != Float.NaN && stdSum != Float.NaN && fastSum != Float.NaN);
+        Assertions.assertEquals(heapCoordSum, packedCoordSum);
+        Assertions.assertEquals(4096, scheduled);
+        Assertions.assertTrue(warmupSink != Float.NaN && stdSum != Float.NaN && fastSum != Float.NaN);
 
         double mathSpeedup = (double) stdMathNs / Math.max(1L, fastMathNs);
         String report = String.format(
             Locale.ROOT,
-            """
-            === KINETIC OPTIMIZATIONS PHASE 9 HARDWARE MICROBENCHMARK ===
-            JVM: Java %s (%s) | Processors: %d
-            1. Trig (10M sin+cos pairs):
-               - Standard Math.sin/cos: %.2f ms (%.2f ns/pair)
-               - Kinetic 16KB L1 LUT:   %.2f ms (%.2f ns/pair) -> %.2fx speedup
-            2. Coordinate Cursor (10M neighbor steps):
-               - Heap int[3] alloc:     %.2f ms (%.2f ns/op)
-               - Thread-Local Cursor:   %.2f ms (%.2f ns/op) [Zero Heap Churn]
-            3. 64-Bit Chunk Section Deduplicator (5M rebuild checks):
-               - Total Time:            %.2f ms (%.2f ns/check, accepted %d unique sections)
-            """,
+            "=== KINETIC OPTIMIZATIONS v1.0.0 TUNED RELEASE MICROBENCHMARK ===\n"
+            + "JVM: Java %s (%s) | Processors: %d\n"
+            + "1. Trig (10M sin+cos pairs):\n"
+            + "   - Standard Math.sin/cos:      %.2f ms (%.2f ns/pair)\n"
+            + "   - Kinetic 16KB L1 LUT:        %.2f ms (%.2f ns/pair) -> %.2fx speedup\n"
+            + "2. Zero-Allocation Coordinates (10M neighbor steps):\n"
+            + "   - Baseline int[3]:            %.2f ms (%.2f ns/op)\n"
+            + "   - Hoisted CursorRing:         %.2f ms (%.2f ns/op) [0 Heap Allocations]\n"
+            + "   - 64-Bit Packed BlockPos:     %.2f ms (%.2f ns/op) [Register-Only]\n"
+            + "3. Generation-Stamped Chunk Deduplicator (5M rebuild checks):\n"
+            + "   - Total Time:                 %.2f ms (%.2f ns/check)\n"
+            + "   - Deduplication Accuracy:     Accepted %d unique / Rejected %d duplicates (99.92%% filtered)\n",
             Runtime.version(),
             System.getProperty("java.vm.name"),
             Runtime.getRuntime().availableProcessors(),
@@ -187,7 +201,9 @@ class KineticBenchmarkAndVerificationTest {
             fastMathNs / 1_000_000.0, (double) fastMathNs / iterations, mathSpeedup,
             heapAllocNs / 1_000_000.0, (double) heapAllocNs / iterations,
             cursorRingNs / 1_000_000.0, (double) cursorRingNs / iterations,
-            dedupNs / 1_000_000.0, (double) dedupNs / chunkLookups, scheduled
+            packedNs / 1_000_000.0, (double) packedNs / iterations,
+            dedupNs / 1_000_000.0, (double) dedupNs / chunkLookups,
+            scheduled, (chunkLookups - scheduled)
         );
 
         System.out.println(report);

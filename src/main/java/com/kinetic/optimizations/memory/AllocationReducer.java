@@ -1,34 +1,58 @@
 package com.kinetic.optimizations.memory;
 
-import java.util.concurrent.atomic.AtomicLong;
-
-/**
- * Eliminates high-frequency temporary heap allocations in block-iteration,
- * neighbor lookup, and lighting hot paths using thread-local primitive coordinate cursors.
- */
 public final class AllocationReducer {
 
-    // Pre-computed 6-direction normal offsets: DOWN, UP, NORTH, SOUTH, WEST, EAST
     public static final int[] DIR_OFFSET_X = {0, 0, 0, 0, -1, 1};
     public static final int[] DIR_OFFSET_Y = {-1, 1, 0, 0, 0, 0};
     public static final int[] DIR_OFFSET_Z = {0, 0, -1, 1, 0, 0};
     public static final int DIRECTION_COUNT = 6;
 
+    private static final int X_BITS = 26;
+    private static final int Z_BITS = 26;
+    private static final int Y_BITS = 12;
+    private static final int Y_SHIFT = Z_BITS;
+    private static final int X_SHIFT = Y_SHIFT + Y_BITS;
+    private static final long X_MASK = (1L << X_BITS) - 1L;
+    private static final long Y_MASK = (1L << Y_BITS) - 1L;
+    private static final long Z_MASK = (1L << Z_BITS) - 1L;
+
     private static final ThreadLocal<CursorRing> CURSOR_RING =
         ThreadLocal.withInitial(CursorRing::new);
-
-    private static final AtomicLong AVOIDED_ALLOCATIONS = new AtomicLong(0L);
 
     private AllocationReducer() {
     }
 
-    public static MutablePosCursor acquireCursor(int x, int y, int z) {
-        AVOIDED_ALLOCATIONS.incrementAndGet();
-        return CURSOR_RING.get().next().set(x, y, z);
+    public static long packBlockPos(int x, int y, int z) {
+        return (((long) x & X_MASK) << X_SHIFT)
+             | (((long) y & Y_MASK) << Y_SHIFT)
+             | ((long) z & Z_MASK);
     }
 
-    public static long getAvoidedAllocationsCount() {
-        return AVOIDED_ALLOCATIONS.get();
+    public static int unpackX(long packed) {
+        return (int) (packed << (64 - X_SHIFT - X_BITS) >> (64 - X_BITS));
+    }
+
+    public static int unpackY(long packed) {
+        return (int) (packed << (64 - Y_SHIFT - Y_BITS) >> (64 - Y_BITS));
+    }
+
+    public static int unpackZ(long packed) {
+        return (int) (packed << (64 - Z_BITS) >> (64 - Z_BITS));
+    }
+
+    public static long offsetPacked(long packed, int dirIndex) {
+        int nx = unpackX(packed) + DIR_OFFSET_X[dirIndex];
+        int ny = unpackY(packed) + DIR_OFFSET_Y[dirIndex];
+        int nz = unpackZ(packed) + DIR_OFFSET_Z[dirIndex];
+        return packBlockPos(nx, ny, nz);
+    }
+
+    public static CursorRing acquireRing() {
+        return CURSOR_RING.get();
+    }
+
+    public static MutablePosCursor acquireCursor(int x, int y, int z) {
+        return CURSOR_RING.get().next(x, y, z);
     }
 
     public static void resetThreadLocalRing() {
@@ -55,13 +79,11 @@ public final class AllocationReducer {
         }
 
         public long toPackedLong() {
-            return ((long) (x & 0x3FFFFFF) << 38)
-                 | ((long) (y & 0xFFF) << 26)
-                 | ((long) (z & 0x3FFFFFF));
+            return packBlockPos(x, y, z);
         }
     }
 
-    private static final class CursorRing {
+    public static final class CursorRing {
         private static final int RING_SIZE = 32;
         private static final int RING_MASK = RING_SIZE - 1;
         private final MutablePosCursor[] cursors = new MutablePosCursor[RING_SIZE];
@@ -73,9 +95,12 @@ public final class AllocationReducer {
             }
         }
 
-        MutablePosCursor next() {
+        public MutablePosCursor next(int x, int y, int z) {
             MutablePosCursor cursor = cursors[index];
             index = (index + 1) & RING_MASK;
+            cursor.x = x;
+            cursor.y = y;
+            cursor.z = z;
             return cursor;
         }
     }
